@@ -14,12 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from setuptools import setup
-
 import glob
 import os
 import sys
 
+from setuptools import setup
 
 if __name__ == "__main__":
     DIRNAME = os.path.abspath(os.path.dirname(__file__))
@@ -28,12 +27,13 @@ if __name__ == "__main__":
     try:
         py_dirname = DIRNAME
         sys.path.insert(0, py_dirname)
-    
         from automaton import VERSION
+
         version = VERSION
     finally:
         del sys.path[0]
-    
+
+
     def read_requirements(*filenames):
         requirements = []
         for filename in filenames:
@@ -44,13 +44,14 @@ if __name__ == "__main__":
                     if requirement not in requirements:
                         requirements.append(requirement)
         return requirements
-    
+
+
     # search executables
     scripts = []
     for filepath in glob.glob('bin/*'):
         if os.path.isfile(filepath) and os.access(filepath, os.X_OK):
             scripts.append(filepath)
-    
+
     # search packages
     root_packages = ['automaton']
     packages = []
@@ -60,21 +61,8 @@ if __name__ == "__main__":
             if '__init__.py' in filenames:
                 rdirpath = os.path.relpath(dirpath, DIRNAME)
                 packages.append(os.path.normpath(rdirpath).replace(os.sep, '.'))
-    print(packages)
-    
-#    # search requirement files
-#    data_files = []
-#    for data_dirname, patterns in [('requirements', ('*.txt', )),
-#                                   ('docs/source', ('conf.py', '*.rst')),
-#                                   ('docs/source/img', ('*.jpg',)),
-#                                  ]:
-#        files = []
-#        for pattern in patterns:
-#            for fpath in glob.glob(os.path.join(DIRNAME, data_dirname, pattern)):
-#                files.append(os.path.relpath(fpath, DIRNAME))
-#        data_files.append((data_dirname, files))
-#    print(data_files)
-    
+
+    # Final setup
     setup(
         name="automaton",
         version=version,
@@ -84,12 +72,11 @@ if __name__ == "__main__":
         author_email="toroidh@gmail.com",
         install_requires=read_requirements('install'),
         package_data={},
-        #data_files=data_files,
+        # data_files=data_files,
         url="...",
         download_url='...',
         packages=packages,
         scripts=scripts,
-#        tests_require=['tox'],
-#        cmdclass = {'test': Tox},
+        # tests_require=['tox'],
+        # cmdclass = {'test': Tox},
     )
-

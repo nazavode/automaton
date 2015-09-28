@@ -1,4 +1,3 @@
 include requirements/*.txt
 include docs/source/conf.py
 include docs/source/*.rst
-include docs/source/img/*.jpg
