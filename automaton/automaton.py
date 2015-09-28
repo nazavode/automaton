@@ -22,9 +22,12 @@ __all__ = (
 
 
 class Event(object):
-    def __init__(self, begin, end):
-        self.begin = begin
-        self.end = end
+    def __init__(self, source_state, dest_state):
+        self.source_state = source_state
+        self.dest_state = dest_state
+
+    def __repr__(self):
+        return "<Event '{}' -> '{}'>".format(self.source_state, self.dest_state)
 
 
 class AutomatonMeta(type):
