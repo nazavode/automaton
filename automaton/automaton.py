@@ -36,7 +36,7 @@ class AutomatonMeta(type):
         for attr in dir(cls):
             value = getattr(cls, attr)
             if isinstance(value, Event):
-                # ...
+                # TODO: build states graph.
                 pass
         return cls
 
