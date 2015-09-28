@@ -23,4 +23,20 @@ __copyright__ = 'Copyright (c) 2015 Federico Ficarelli'
 __license__ = 'Apache License Version 2.0'
 
 
-__all__ = ()
+__all__ = (
+    "VERSION_INFO",
+    "VERSION",
+)
+
+
+import collections
+
+VersionInfo = collections.namedtuple('VersionInfo', (
+    'major',
+    'minor',
+    'patch',
+))
+
+VERSION_INFO = VersionInfo(major=0, minor=1, patch=0)
+
+VERSION = '.'.join(str(v) for v in VERSION_INFO)
