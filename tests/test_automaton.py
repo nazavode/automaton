@@ -18,8 +18,10 @@ from automaton import *
 
 
 class TrafficLight(Automaton):
-    def __init__(self, status):
-        self.status = status
+
+    go = Event("red", "green")
+    slowdown = Event("green", "yellow")
+    stop = Event("yellow", "red")
 
 
 def test_pass():
