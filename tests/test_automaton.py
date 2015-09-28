@@ -20,10 +20,20 @@ from automaton import *
 
 
 def test_unconnected():
+    # The graph representing the FSM must be connected.
     with pytest.raises(DefinitionError):
         class Unconnected(metaclass=AutomatonMeta):
             cluster1 = Event("state_a", "state_b")
             cluster2 = Event("state_c", "state_d")
+
+
+def test_double_event():
+    # It's ok to have multiple directed arcs between two states,
+    # it seems like an elegant (but somehow not efficient) way
+    # to support multiple events per transition.
+    class DoubleEvent(metaclass=AutomatonMeta):
+        event1 = Event("state_a", "state_b")
+        event2 = Event("state_a", "state_b")
 
 
 def test_definition():
