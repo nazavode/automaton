@@ -3,7 +3,7 @@ Automaton
 =========
 A minimal python finite-state machine. Automaton requires Python >= 3.4.
 
-.. image:: https://travis-ci.org/simone-campagna/zirkon.svg?branch=master
+.. image:: https://travis-ci.org/fmontag451/automaton.svg?branch=master
     :target: https://travis-ci.org/fmontag451/automaton
     :alt: Build status
 
