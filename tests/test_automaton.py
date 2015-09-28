@@ -17,5 +17,10 @@
 from automaton import *
 
 
+class Automata(metaclass=AutomatonMeta):
+    def __init__(self, status):
+        self.status = status
+
+
 def test_pass():
     pass

@@ -18,18 +18,22 @@
 Minimal finite-state machine.
 """
 
+import collections
+
+from automaton.automaton import Event, AutomatonMeta
+
 __author__ = 'Federico Ficarelli'
 __copyright__ = 'Copyright (c) 2015 Federico Ficarelli'
 __license__ = 'Apache License Version 2.0'
 
-
 __all__ = (
+    # Version
     "VERSION_INFO",
     "VERSION",
+    # Automaton API
+    "Event",
+    "AutomatonMeta",
 )
-
-
-import collections
 
 VersionInfo = collections.namedtuple('VersionInfo', (
     'major',

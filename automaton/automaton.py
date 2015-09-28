@@ -15,4 +15,24 @@
 # limitations under the License.
 
 
-__all__ = ()
+__all__ = (
+    "Event",
+    "AutomatonMeta",
+)
+
+
+class Event(object):
+    def __init__(self, begin, end):
+        self.begin = begin
+        self.end = end
+
+
+class AutomatonMeta(type):
+    def __new__(mcls, class_name, class_bases, class_dict):
+        cls = super().__new__(mcls, class_name, class_bases, class_dict)
+        for attr in dir(cls):
+            value = getattr(cls, attr)
+            if isinstance(value, Event):
+                # ...
+                pass
+        return cls
