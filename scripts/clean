@@ -1,0 +1,178 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Copyright 2015 Simone Campagna
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+__author__ = "Simone Campagna"
+
+import argparse
+import fnmatch
+import logging
+import os
+import shutil
+import sys
+import subprocess
+
+
+DIRTYPE_PY = 'py'
+DIRTYPE_DATA = 'data'
+DIRTYPES = (DIRTYPE_PY, DIRTYPE_DATA)
+
+PATTERNS = {
+    DIRTYPE_PY: {
+        'f': (
+              '*.pyc',
+              '*.pyo',
+        ),
+        'd': (
+              '__pycache__',
+              '*.egg',
+              '*.egg-info',
+        ),
+    },
+    DIRTYPE_DATA: {
+        'f': (
+              '*',
+        ),
+        'd': (
+              '*',
+        ),
+    },
+}
+
+def filter(paths, globs):
+    r_paths = list(paths)
+    f_paths = []
+    for glob in globs:
+        for path in fnmatch.filter(r_paths, glob):
+            r_paths.remove(path)
+            f_paths.append(path)
+    return f_paths
+
+FILTERS = {}
+
+def make_filter(globs):
+    return lambda paths: filter(paths, globs)
+
+for dirtype in DIRTYPES:
+    FILTERS[dirtype] = {}
+    for key, globs in PATTERNS[dirtype].items():
+        #print(dirtype, key, globs)
+        FILTERS[dirtype][key] = make_filter(globs)
+
+def remove(path, logger, dry_run):
+    returncode = 0
+    if not os.path.exists(path):
+        logger.debug('entry {p} not found'.format(p=path))
+    else:
+        if os.path.isdir(path):
+            cleaner = shutil.rmtree
+            ptype = 'directory'
+        else:
+            cleaner = os.remove
+            ptype = 'file'
+        logger.info('removing {pt} {p}...'.format(pt=ptype, p=path))
+        try:
+            if not dry_run:
+                cleaner(path)
+        except Exception as err:
+            logger.error('{pt} {p} *NOT* removed: {et}: {e}'.format(pt=ptype, p=path, et=type(err), e=err))
+            returncode += 1
+    return returncode
+
+if __name__ == '__main__':
+    default_verbose_level = 1
+    default_dry_run = False
+    DEPTH_INF = 'inf'
+
+    def dirdepth(d):
+        l = d.split(':', 2)
+        dirtype = l[0].lower()
+        if not dirtype in DIRTYPES:
+            raise ValueError("invalid dir type {}".format(dirtype))
+        directory = os.path.abspath(l[1])
+        if len(l) == 3:
+            v = l[2].lower()
+            if v == DEPTH_INF.lower():
+                v = DEPTH_INF
+            else:
+                v = int(v)
+            max_depth = v
+        else:
+            max_depth = DEPTH_INF
+        return dirtype, directory, max_depth
+
+    parser = argparse.ArgumentParser(description="""
+""")
+
+    parser.add_argument('directories',
+                        metavar='TYPE:DIR[:DEPTH]',
+                        nargs='+',
+                        type=dirdepth,
+                        help='add directory "type:dir[:depth]"; type can be any of {types}; depth is {inf!r} by default'.format(
+                            types='|'.join(DIRTYPES),
+                            inf=DEPTH_INF))
+
+    parser.add_argument('--dry-run', '-D',
+                        action='store_true',
+                        default=default_dry_run,
+                        help='dry run')
+
+    parser.add_argument('--verbose', '-v',
+                        dest='verbose_level',
+                        default=default_verbose_level,
+                        help='increase verbose level')
+
+    parser.add_argument('--quiet', '-q',
+                        dest='verbose_level',
+                        default=default_verbose_level,
+                        action='store_const',
+                        const=0,
+                        help='disable logging')
+
+    args = parser.parse_args()
+
+    if args.verbose_level == 0:
+        log_level = logging.WARNING
+    elif args.verbose_level == 1:
+        log_level = logging.INFO
+    else:
+        log_level = logging.DEBUG
+
+    logger = logging.getLogger('clean')
+    handler = logging.StreamHandler()
+    handler.setLevel(log_level)
+    logger.addHandler(handler)
+    logger.setLevel(log_level)
+
+    returncode = 0
+    for dirtype, directory, max_depth in args.directories:
+        if dirtype == DIRTYPE_DATA:
+            returncode += remove(directory, logger=logger, dry_run=args.dry_run)
+        else:
+            for depth, (dirpath, dirnames, filenames) in enumerate(os.walk(directory, topdown=True)):
+                if max_depth != DEPTH_INF and depth > max_depth:
+                    break
+                if dirtype == DIRTYPE_PY:
+                    for filename in FILTERS[dirtype]['f'](filenames):
+                        base, ext = os.path.splitext(filename)
+                        returncode += remove(os.path.join(dirpath, filename), logger=logger, dry_run=args.dry_run)
+                        break
+                    for dirname in FILTERS[dirtype]['d'](dirnames):
+                        returncode += remove(os.path.join(dirpath, dirname), logger=logger, dry_run=args.dry_run)
+                        dirnames.remove(dirname)
+
+    sys.exit(returncode)

@@ -1,0 +1,130 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Copyright 2015 Simone Campagna
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+__author__ = "Simone Campagna"
+
+import argparse
+import contextlib
+import os
+import sys
+import subprocess
+
+def mstream_wrap(function_name):
+    def method(self, *p_args, **n_args):
+        for stream in self.streams:
+            f = getattr(stream, function_name)
+            f(*p_args, **n_args)
+    method.__name__ = function_name
+    return method
+
+class mstream(object):
+    def __init__(self, streams):
+        self.streams = []
+        for stream in streams:
+            if isinstance(stream, str):
+                stream = self.create_stream(stream)
+            self.streams.append(stream)
+
+    @classmethod
+    def fstream(cls, filename):
+        dirname, basename = os.path.split(os.path.abspath(filename))
+        if dirname and not os.path.isdir(dirname):
+            os.makedirs(dirname)
+        return open(filename, 'w')
+
+    @classmethod
+    def create_stream(cls, handle):
+        l = handle.split(':', 1)
+        if len(l) == 1:
+            l.append(None)
+        protocol, destination = l
+        if protocol == 'stderr':
+            stream = sys.stderr
+        elif protocol == 'stdout':
+            stream = sys.stdout
+        elif protocol == 'file':
+            stream = cls.fstream(destination)
+        else:
+            raise ValueError("invalid stream handle {!r}".format(handle))
+        return stream
+
+    write = mstream_wrap('write')
+    writelines = mstream_wrap('writelines')
+    read = mstream_wrap('read')
+    readlines = mstream_wrap('readlines')
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--force-returncode", "-r",
+                        type=int,
+                        default=None,
+                        help="force returncode")
+    output_argument_group = parser.add_mutually_exclusive_group()
+    output_argument_group.add_argument("--output", "-o",
+                        action="append",
+                        default=[],
+                        help="add output stream")
+    output_argument_group.add_argument("--output-to-error", "-OE",
+                       default=False,
+                        action="store_true",
+                        help="use error stream")
+
+    error_argument_group = parser.add_mutually_exclusive_group()
+    error_argument_group.add_argument("--error", "-e",
+                        action="append",
+                        default=[],
+                        help="add error stream")
+    error_argument_group.add_argument("--error-to-output", "-EO",
+                       default=False,
+                        action="store_true",
+                        help="use output stream")
+
+    parser.add_argument("command_line",
+                        nargs='+',
+                        help="command line")
+
+    args = parser.parse_args()
+
+
+    if args.output_to_error:
+        estream = mstream(args.error)
+        p = subprocess.Popen(args.command_line, stdout=subprocess.STDERR, stderr=subproces.PIPE)
+        output, error = p.communicate()
+        estream.write(output.decode('utf-8'))
+        returncode = p.returncode
+    elif args.error_to_output:
+        ostream = mstream(args.output)
+        p = subprocess.Popen(args.command_line, stdout=subprocess.PIPE, stderr=subprocess.STDERR)
+        output, error = p.communicate()
+        ostream.write(output.decode('utf-8'))
+        returncode = p.returncode
+    else:
+        estream = mstream(args.error)
+        ostream = mstream(args.output)
+        p = subprocess.Popen(args.command_line, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output, error = p.communicate()
+        ostream.write(output.decode('utf-8'))
+        estream.write(error.decode('utf-8'))
+        returncode = p.returncode
+
+    if args.force_returncode is not None:
+        returncode = args.force_returncode
+
+    sys.exit(returncode)
+
