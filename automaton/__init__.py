@@ -20,7 +20,7 @@ Minimal finite-state machine.
 
 import collections
 
-from automaton.automaton import Event, AutomatonMeta
+from automaton.automaton import Event, Automaton
 
 __author__ = 'Federico Ficarelli'
 __copyright__ = 'Copyright (c) 2015 Federico Ficarelli'
@@ -32,7 +32,7 @@ __all__ = (
     "VERSION",
     # Automaton API
     "Event",
-    "AutomatonMeta",
+    "Automaton",
 )
 
 VersionInfo = collections.namedtuple('VersionInfo', (

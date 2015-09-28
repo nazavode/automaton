@@ -17,7 +17,7 @@
 
 __all__ = (
     "Event",
-    "AutomatonMeta",
+    "Automaton",
 )
 
 
@@ -36,3 +36,7 @@ class AutomatonMeta(type):
                 # ...
                 pass
         return cls
+
+
+class Automaton(metaclass=AutomatonMeta):
+    pass

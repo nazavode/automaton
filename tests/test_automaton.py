@@ -17,7 +17,7 @@
 from automaton import *
 
 
-class Automata(metaclass=AutomatonMeta):
+class TrafficLight(Automaton):
     def __init__(self, status):
         self.status = status
 
