@@ -31,8 +31,8 @@ class Event(object):
 
 
 class AutomatonMeta(type):
-    def __new__(mcls, class_name, class_bases, class_dict):
-        cls = super().__new__(mcls, class_name, class_bases, class_dict)
+    def __new__(mcs, class_name, class_bases, class_dict):
+        cls = super().__new__(mcs, class_name, class_bases, class_dict)
         for attr in dir(cls):
             value = getattr(cls, attr)
             if isinstance(value, Event):
