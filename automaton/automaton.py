@@ -17,8 +17,14 @@
 
 __all__ = (
     "Event",
-    "Automaton",
+    "AutomatonMeta",
+    # Exceptions
+    "DefinitionError",
 )
+
+
+class DefinitionError(Exception):
+    pass
 
 
 class Event(object):
@@ -33,13 +39,13 @@ class Event(object):
 class AutomatonMeta(type):
     def __new__(mcs, class_name, class_bases, class_dict):
         cls = super().__new__(mcs, class_name, class_bases, class_dict)
+        events_to_states = {}
+        states_to_events = {}
         for attr in dir(cls):
             value = getattr(cls, attr)
             if isinstance(value, Event):
-                # TODO: build states graph.
-                pass
+                states = (value.source_state, value.dest_state)
+                events_to_states[attr] = states
+                states_to_events[states] = attr
+        cls.events = events_to_states
         return cls
-
-
-class Automaton(metaclass=AutomatonMeta):
-    pass

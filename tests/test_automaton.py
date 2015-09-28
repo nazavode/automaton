@@ -14,15 +14,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pytest
+
 from automaton import *
 
 
-class TrafficLight(Automaton):
+def test_unconnected():
+    with pytest.raises(DefinitionError):
+        class Unconnected(metaclass=AutomatonMeta):
+            cluster1 = Event("state_a", "state_b")
+            cluster2 = Event("state_c", "state_d")
 
-    go = Event("red", "green")
-    slowdown = Event("green", "yellow")
-    stop = Event("yellow", "red")
 
-
-def test_pass():
-    pass
+def test_definition():
+    class TrafficLight(metaclass=AutomatonMeta):
+        go = Event("red", "green")
+        slowdown = Event("green", "yellow")
+        stop = Event("yellow", "red")
