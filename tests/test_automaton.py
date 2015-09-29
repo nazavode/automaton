@@ -77,6 +77,11 @@ def test_unconnected_naive():
             cluster2 = Event("state_c", "state_d")
 
 
+def test_empty():
+    class Empty(Automaton):
+        pass
+
+
 def test_unconnected():
     # The graph representing the FSM must be connected.
     with pytest.raises(DefinitionError):
