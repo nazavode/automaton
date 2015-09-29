@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections import namedtuple
+
 from .classproperty import classproperty
 
 from .exceptions import (
@@ -28,13 +30,7 @@ __all__ = (
 )
 
 
-class Event(object):
-    def __init__(self, source_state, dest_state):
-        self.source_state = source_state
-        self.dest_state = dest_state
-
-    def __repr__(self):
-        return "<Event '{}' -> '{}'>".format(self.source_state, self.dest_state)
+Event = namedtuple("Event", ["source_state", "dest_state"])
 
 
 class AutomatonMeta(type):
