@@ -53,11 +53,13 @@ class AutomatonMeta(type):
         # Internal class members
         cls.__states__ = states
         cls.__events__ = events_to_states
+        cls.__transitions__ = states_to_events
         if cls.__default_initial_state__ is not None and cls.__default_initial_state__ not in cls.__states__:
             raise DefinitionError("Default initial state '{}' unknown.".format(cls.__default_initial_state__))
         # Static properties
         cls.states = classproperty(lambda kls: kls.__states__)
         cls.events = classproperty(lambda kls: kls.__events__)
+        cls.transitions = classproperty(lambda kls: kls.__transitions__)
         cls.default_initial_state = classproperty(lambda kls: kls.__default_initial_state__)
         return cls
 
@@ -89,7 +91,7 @@ class Automaton(metaclass=AutomatonMeta):
     @state.setter
     def state(self, next_state):
         transition = (self.state, next_state)
-        if transition not in self.events:  # pylint: disable=no-member
+        if transition not in self.transitions:  # pylint: disable=no-member
             raise InvalidTransitionError("No event {} found.".format(transition))
         self._state = next_state
 
