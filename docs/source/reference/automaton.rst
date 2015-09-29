@@ -1,6 +1,10 @@
 automaton package
 =================
 
+.. testsetup::
+
+    from automaton.automaton import *
+
 Submodules
 ----------
 
