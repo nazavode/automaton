@@ -1,17 +1,16 @@
-.. Automaton documentation master file, created by
-   sphinx-quickstart on Mon Sep 28 14:44:01 2015.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+=========================================
+Automaton - Minimal Finite-state Machines
+=========================================
 
-Welcome to Automaton's documentation!
-=====================================
+Automaton is a minimal and easy to use finite-state machine definition package for Python.
+The focus here is on *minimalism* and *not* on feature-packness.
 
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
-
+   reference/index
 
 Indices and tables
 ==================
