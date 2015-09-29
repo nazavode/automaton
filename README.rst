@@ -8,8 +8,8 @@ A minimal python finite-state machine. Automaton requires Python >= 3.4.
     :alt: Build status
 
 .. image:: https://readthedocs.org/projects/automaton/badge/?version=latest
-    :target: https://readthedocs.org/projects/automaton/?badge=latest
-    :alt: Documentation status
+    :target: http://automaton.readthedocs.org/en/latest/?badge=latest
+    :alt: Documentation Status
 
 .. image:: https://coveralls.io/repos/fmontag451/automaton/badge.svg?branch=master&service=github
     :target: https://coveralls.io/github/fmontag451/automaton?branch=master
