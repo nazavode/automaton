@@ -85,3 +85,16 @@ class Automaton(metaclass=AutomatonMeta):
     @property
     def state(self):
         return self._state
+
+    @state.setter
+    def state(self, next_state):
+        transition = (self.state, next_state)
+        if transition not in self.events:  # pylint: disable=no-member
+            raise InvalidTransitionError("No event {} found.".format(transition))
+        self._state = next_state
+
+    def event(self, do_event):
+        if do_event not in self.events:  # pylint: disable=no-member
+            raise InvalidTransitionError("Unrecognized event '{}'.".format(do_event))
+        next_state = self.events[do_event][1]  # pylint: disable=no-member
+        self.state = next_state
