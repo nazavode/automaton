@@ -17,7 +17,6 @@
 from collections import namedtuple
 
 from .classproperty import classproperty
-
 from .exceptions import (
     DefinitionError,
     InvalidTransitionError
@@ -27,7 +26,6 @@ __all__ = (
     "Event",
     "Automaton",
 )
-
 
 Event = namedtuple("Event", ["source_state", "dest_state"])
 
@@ -64,7 +62,6 @@ class AutomatonMeta(type):
 
 
 class Automaton(metaclass=AutomatonMeta):
-
     __default_initial_state__ = None
 
     def __init__(self, initial_state=None):

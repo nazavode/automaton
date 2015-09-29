@@ -24,6 +24,7 @@ def test_definition():
         __default_initial_state__ = "state_a"
         event1 = Event("state_a", "state_b")
         event2 = Event("state_b", "state_c")
+
     # Class properties
     assert Simple.default_initial_state == "state_a"
     assert "event1" in Simple.events
@@ -49,6 +50,7 @@ def test_initial_state():
     class NoInit(Automaton):
         event1 = Event("state_a", "state_b")
         event2 = Event("state_b", "state_c")
+
     assert NoInit.default_initial_state is None
     with pytest.raises(DefinitionError):
         noinit_obj = NoInit()
@@ -76,6 +78,7 @@ def test_multiple_events():
         event1 = Event("state_a", "state_b")
         event2 = Event("state_a", "state_b")
         event3 = Event("state_a", "state_b")
+
     assert "event1" in MultipleEvents.events
     assert "event2" in MultipleEvents.events
     assert "event3" in MultipleEvents.events
@@ -87,6 +90,7 @@ def test_transition():
         go = Event("red", "green")
         slowdown = Event("green", "yellow")
         stop = Event("yellow", "red")
+
     #
     crossroads = TrafficLight()
     # Initial state

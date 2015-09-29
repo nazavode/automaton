@@ -24,7 +24,6 @@ from .automaton import (
     Event,
     Automaton,
 )
-
 from .exceptions import (
     AutomatonError,
     DefinitionError,
