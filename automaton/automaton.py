@@ -57,8 +57,8 @@ class AutomatonMeta(type):
         # Internal class members
         cls.__states__ = states
         cls.__events__ = events_to_states
-        if not hasattr(cls, "__default_initial_state__"):
-            cls.__default_initial_state__ = None
+        if cls.__default_initial_state__ is not None and cls.__default_initial_state__ not in cls.__states__:
+            raise DefinitionError("Default initial state '{}' unknown.".format(cls.__default_initial_state__))
         # Static properties
         cls.states = classproperty(lambda kls: kls.__states__)
         cls.events = classproperty(lambda kls: kls.__events__)
@@ -66,9 +66,9 @@ class AutomatonMeta(type):
         return cls
 
 
-
-
 class Automaton(metaclass=AutomatonMeta):
+
+    __default_initial_state__ = None
 
     def __init__(self, initial_state=None):
         # Setup initial state
@@ -89,6 +89,3 @@ class Automaton(metaclass=AutomatonMeta):
     @property
     def state(self):
         return self._state
-
-
-
