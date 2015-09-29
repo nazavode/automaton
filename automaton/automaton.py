@@ -134,6 +134,12 @@ class AutomatonMeta(type):
 class Automaton(metaclass=AutomatonMeta):
     """ Base class for automaton types.
 
+    In order to define an automaton, this class must be the base for the
+    provided machine definition:
+
+    >>> class MyClass(Automaton):
+    ...     transition = Event("state_a", "state_b")
+
     Parameters
     ----------
     initial_state : any, optional
