@@ -19,25 +19,49 @@ import pytest
 from automaton import *
 
 
-def test_definition():
-    class Simple(Automaton):
+# def test_definition():
+#     class Simple(Automaton):
+#         __default_initial_state__ = "state_a"
+#         event1 = Event("state_a", "state_b")
+#         event2 = Event("state_b", "state_c")
+#     # Class properties
+#     assert Simple.default_initial_state == "state_a"
+#     assert "event1" in Simple.events
+#     assert "event2" in Simple.events
+#     assert "event3" not in Simple.events
+#     # Instantiation
+#     simple_obj = Simple()
+#     # Class properties through instance
+#     assert simple_obj.default_initial_state == "state_a"
+#     assert "event1" in simple_obj.events
+#     assert "event2" in simple_obj.events
+#     assert "event3" not in simple_obj.events
 
-        __default_initial_state__ = "state_a"
 
+def test_initial_state():
+    # Invalid initial state
+    with pytest.raises(DefinitionError):
+        class Wrong(Automaton):
+            __default_initial_state__ = "unknown"
+            event1 = Event("state_a", "state_b")
+            event2 = Event("state_b", "state_c")
+    # Initial state not defined
+    class NoInit(Automaton):
         event1 = Event("state_a", "state_b")
         event2 = Event("state_b", "state_c")
-    # Class properties
-    assert Simple.default_initial_state == "state_a"
-    assert "event1" in Simple.events
-    assert "event2" in Simple.events
-    assert "event3" not in Simple.events
-    # Instantiation
-    simple_obj = Simple()
-    # Class properties through instance
-    assert simple_obj.default_initial_state == "state_a"
-    assert "event1" in simple_obj.events
-    assert "event2" in simple_obj.events
-    assert "event3" not in simple_obj.events
+    assert NoInit.default_initial_state is None
+    with pytest.raises(DefinitionError):
+        noinit_obj = NoInit()
+    with pytest.raises(DefinitionError):
+        noinit_obj = NoInit(initial_state="unknown")
+    for state in "state_a", "state_b", "state_c":
+        noinit_obj = NoInit(initial_state=state)
+        assert noinit_obj.default_initial_state is None
+        assert noinit_obj.state == state
+
+
+
+
 
 # def test_unconnected():
 #     # The graph representing the FSM must be connected.
@@ -48,28 +72,28 @@ def test_definition():
 #
 #
 
-def test_double_event():
+def test_multiple_events():
     # It's ok to have multiple directed arcs between two states,
     # it seems like an elegant (but somehow not efficient) way
     # to support multiple events per transition.
-    class DoubleEvent(Automaton):
+    class MultipleEvents(Automaton):
         event1 = Event("state_a", "state_b")
         event2 = Event("state_a", "state_b")
-    assert "event1" in DoubleEvent.events
-    assert "event2" in DoubleEvent.events
-#
-#
-# def test_transition():
-#     class TrafficLight(Automaton):
-#
-#         __default_initial_state__ = "red"
-#
-#         go = Event("red", "green")
-#         slowdown = Event("green", "yellow")
-#         stop = Event("yellow", "red")
-#     #
-#     crossroads = TrafficLight()
-#     # Initial state
-#     assert crossroads.state == "red"
+        event3 = Event("state_a", "state_b")
+    assert "event1" in MultipleEvents.events
+    assert "event2" in MultipleEvents.events
+    assert "event3" in MultipleEvents.events
+
+
+def test_transition():
+    class TrafficLight(Automaton):
+        __default_initial_state__ = "red"
+        go = Event("red", "green")
+        slowdown = Event("green", "yellow")
+        stop = Event("yellow", "red")
+    #
+    crossroads = TrafficLight()
+    # Initial state
+    assert crossroads.state == "red"
     # Transitions
     # Invalid transitions
