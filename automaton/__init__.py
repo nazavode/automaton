@@ -20,10 +20,15 @@ Minimal finite-state machine.
 
 import collections
 
-from automaton.automaton import (
+from .automaton import (
     Event,
-    AutomatonMeta,
+    Automaton,
+)
+
+from .exceptions import (
+    AutomatonError,
     DefinitionError,
+    InvalidTransitionError,
 )
 
 __author__ = 'Federico Ficarelli'
@@ -36,8 +41,11 @@ __all__ = (
     "VERSION",
     # Automaton API
     "Event",
-    "AutomatonMeta",
+    "Automaton",
+    # Exceptions
+    "AutomatonError",
     "DefinitionError",
+    "InvalidTransitionError",
 )
 
 VersionInfo = collections.namedtuple('VersionInfo', (
