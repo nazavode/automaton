@@ -19,7 +19,6 @@ from collections import namedtuple
 from .classproperty import classproperty
 
 from .exceptions import (
-    AutomatonError,
     DefinitionError,
     InvalidTransitionError
 )
