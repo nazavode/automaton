@@ -14,12 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 
-from .classproperty import classproperty
 from .exceptions import (
     DefinitionError,
-    InvalidTransitionError
+    InvalidTransitionError,
 )
 
 __all__ = (
@@ -30,8 +29,38 @@ __all__ = (
 Event = namedtuple("Event", ["source_state", "dest_state"])
 
 
-def is_connected(events):
-    return True
+def connected_components(edges):
+    inbound = defaultdict(set)
+    nodes = set()
+    for source_node, dest_node in edges:
+        # Nodes set
+        nodes.add(source_node)
+        nodes.add(dest_node)
+        # Inbound grade
+        inbound[dest_node].add(source_node)
+    #
+    parent = {node: node for node in nodes}
+    #
+    def find(n):
+        if parent[n] == n:
+            return n
+        else:
+            return find(parent[n])
+    #
+    def union(x, y):
+        x_root = find(x)
+        y_root = find(y)
+        parent[x_root] = y_root
+    #
+    for u in nodes:
+        for v in inbound[u]:
+            if find(u) != find(v):
+                union(u, v)
+    components = set()
+    for node in nodes:
+        if parent[node] == node:
+            components.add(node)
+    return components
 
 
 class AutomatonMeta(type):
@@ -51,20 +80,20 @@ class AutomatonMeta(type):
                 # Update mappings
                 events_to_states[attr] = transition
                 states_to_events[transition] = attr
-        # Check graph connection
-        if not is_connected(events_to_states):
-            raise DefinitionError("State graph must be connected.")
-        # Internal class members
-        cls.__states__ = states
-        cls.__events__ = events_to_states
-        cls.__transitions__ = states_to_events
-        if cls.__default_initial_state__ is not None and cls.__default_initial_state__ not in cls.__states__:
-            raise DefinitionError("Default initial state '{}' unknown.".format(cls.__default_initial_state__))
-        # Static properties
-        cls.states = classproperty(lambda kls: kls.__states__)
-        cls.events = classproperty(lambda kls: kls.__events__)
-        cls.transitions = classproperty(lambda kls: kls.__transitions__)
-        cls.default_initial_state = classproperty(lambda kls: kls.__default_initial_state__)
+        if len(states) != 0:
+            # Ok, we are treating the class that defines the actual FSM.
+            #
+            # Check graph connection:
+            components = connected_components(states_to_events.keys())
+            if len(components) != 1:
+                raise DefinitionError("The state graph contains {} connected components: "
+                                      "it must be connected.".format(len(components)))
+            # Internal class members:
+            cls.__states__ = states
+            cls.__events__ = events_to_states
+            cls.__transitions__ = states_to_events
+            if cls.__default_initial_state__ is not None and cls.__default_initial_state__ not in cls.__states__:
+                raise DefinitionError("Default initial state '{}' unknown.".format(cls.__default_initial_state__))
         return cls
 
 
@@ -74,15 +103,15 @@ class Automaton(metaclass=AutomatonMeta):
     def __init__(self, initial_state=None):
         # Setup initial state
         if initial_state is None:
-            if self.default_initial_state is None:  # pylint: disable=no-member
+            if self.__default_initial_state__ is None:
                 raise DefinitionError(
                     "No default initial state defined for '{}', must be specified "
                     "in costruction.".format(self.__class__)
                 )
             else:
-                initial_state = self.default_initial_state  # pylint: disable=no-member
+                initial_state = self.__default_initial_state__
         # Check initial state correctness
-        if initial_state not in self.states:  # pylint: disable=no-member
+        if initial_state not in self.__states__:
             raise DefinitionError("Initial state '{}' unknown.".format(initial_state))
         #
         self._state = initial_state
@@ -94,12 +123,28 @@ class Automaton(metaclass=AutomatonMeta):
     @state.setter
     def state(self, next_state):
         transition = (self.state, next_state)
-        if transition not in self.transitions:  # pylint: disable=no-member
+        if transition not in self.__transitions__:
             raise InvalidTransitionError("No event {} found.".format(transition))
         self._state = next_state
 
     def event(self, do_event):
-        if do_event not in self.events:  # pylint: disable=no-member
+        if do_event not in self.events():
             raise InvalidTransitionError("Unrecognized event '{}'.".format(do_event))
-        next_state = self.events[do_event][1]  # pylint: disable=no-member
+        next_state = self.__events__[do_event][1]
         self.state = next_state
+
+    @classmethod
+    def states(cls):
+        yield from cls.__states__
+
+    @classmethod
+    def events(cls):
+        yield from cls.__events__
+
+    @classmethod
+    def transitions(cls):
+        yield from cls.__transitions__
+
+    @classmethod
+    def get_default_initial_state(cls):
+        return cls.__default_initial_state__

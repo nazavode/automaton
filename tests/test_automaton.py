@@ -26,17 +26,17 @@ def test_definition():
         event2 = Event("state_b", "state_c")
 
     # Class properties
-    assert Simple.default_initial_state == "state_a"
-    assert "event1" in Simple.events
-    assert "event2" in Simple.events
-    assert "event3" not in Simple.events
+    assert Simple.get_default_initial_state() == "state_a"
+    assert "event1" in Simple.events()
+    assert "event2" in Simple.events()
+    assert "event3" not in Simple.events()
     # Instantiation
     simple_obj = Simple()
     # Class properties through instance
-    assert simple_obj.default_initial_state == "state_a"
-    assert "event1" in simple_obj.events
-    assert "event2" in simple_obj.events
-    assert "event3" not in simple_obj.events
+    assert simple_obj.get_default_initial_state() == "state_a"
+    assert "event1" in simple_obj.events()
+    assert "event2" in simple_obj.events()
+    assert "event3" not in simple_obj.events()
 
 
 def test_initial_state():
@@ -51,14 +51,14 @@ def test_initial_state():
         event1 = Event("state_a", "state_b")
         event2 = Event("state_b", "state_c")
 
-    assert NoInit.default_initial_state is None
+    assert NoInit.get_default_initial_state() is None
     with pytest.raises(DefinitionError):
         noinit_obj = NoInit()
     with pytest.raises(DefinitionError):
         noinit_obj = NoInit(initial_state="unknown")
     for state in "state_a", "state_b", "state_c":
         noinit_obj = NoInit(initial_state=state)
-        assert noinit_obj.default_initial_state is None
+        assert noinit_obj.get_default_initial_state() is None
         assert noinit_obj.state == state
 
 
@@ -121,16 +121,16 @@ def test_multiple_arcs():
         event2 = Event("state_a", "state_b")
         event3 = Event("state_a", "state_b")
 
-    assert "event1" in Multiple.events
-    assert "event2" in Multiple.events
-    assert "event3" in Multiple.events
+    assert "event1" in Multiple.events()
+    assert "event2" in Multiple.events()
+    assert "event3" in Multiple.events()
 
 
 def test_auto_arc():
     class Auto(Automaton):
         loop = Event("state_a", "state_a")
 
-    assert "loop" in Auto.events
+    assert "loop" in Auto.events()
     auto_obj = Auto(initial_state="state_a")
     assert auto_obj.state == "state_a"
     auto_obj.event("loop")
@@ -144,7 +144,6 @@ def test_transition():
         slowdown = Event("green", "yellow")
         stop = Event("yellow", "red")
 
-    #
     crossroads = TrafficLight()
     # Initial state
     assert crossroads.state == "red"
@@ -160,4 +159,7 @@ def test_transition():
     # Invalid transitions
     with pytest.raises(InvalidTransitionError):
         crossroads.event("stop")
+    assert crossroads.state == "green"
+    with pytest.raises(InvalidTransitionError):
+        crossroads.event("unknown")
     assert crossroads.state == "green"
