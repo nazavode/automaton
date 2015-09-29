@@ -13,6 +13,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+Exceptions raised in the ``automaton`` package.
+"""
 
 
 __all__ = (
@@ -23,12 +26,15 @@ __all__ = (
 
 
 class AutomatonError(Exception):
+    """ Exception representing a generic error occurred in the automaton. """
     pass
 
 
 class DefinitionError(AutomatonError):
+    """ Exception representing an error occurred during the automaton definition. """
     pass
 
 
 class InvalidTransitionError(AutomatonError):
+    """ Exception representing an invalid transition. """
     pass

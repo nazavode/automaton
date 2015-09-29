@@ -13,6 +13,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+A minimal Python finite-state machine implementation.
+"""
 
 from collections import namedtuple, defaultdict
 
@@ -26,10 +29,35 @@ __all__ = (
     "Automaton",
 )
 
+
 Event = namedtuple("Event", ["source_state", "dest_state"])
+""" The class that represents an event. """
 
 
 def connected_components(edges):
+    """ Finds the connected components in a graph.
+
+    Given a graph, this function finds its connected components using the
+    `Union Find`_ algorithm.
+
+    Parameters
+    ----------
+    edges : dict
+        The list of graph edges.
+        The dictionary must have the following form::
+            {
+                ('source_node_1', 'dest_node_1'),
+                # ...
+                ('source_node_n', 'dest_node_n'),
+            }
+
+    Returns
+    -------
+    set
+        The set containing the nodes grouped by connected components.
+
+    .. _Union Find: https://en.wikipedia.org/wiki/Disjoint-set_data_structure
+    """
     inbound = defaultdict(set)
     nodes = set()
     for source_node, dest_node in edges:
@@ -41,13 +69,13 @@ def connected_components(edges):
     #
     parent = {node: node for node in nodes}
     #
-    def find(n):  # pylint: disable=invalid-name
+    def find(n):  # pylint: disable=invalid-name, missing-docstring
         if parent[n] == n:
             return n
         else:
             return find(parent[n])
     #
-    def union(x, y):  # pylint: disable=invalid-name
+    def union(x, y):  # pylint: disable=invalid-name, missing-docstring
         x_root = find(x)
         y_root = find(y)
         parent[x_root] = y_root
@@ -64,6 +92,12 @@ def connected_components(edges):
 
 
 class AutomatonMeta(type):
+    """ The metaclass that must be applied on the ``automaton``-enabled classes'
+    hierarchy.
+
+    The :meth:`~automaton.automaton.AutomatonMeta.__new__` method builds the
+    actual finite-state machine based on the user-provided events definition.
+    """
     def __new__(mcs, class_name, class_bases, class_dict):
         cls = super().__new__(mcs, class_name, class_bases, class_dict)
         events_to_states = {}
@@ -98,6 +132,24 @@ class AutomatonMeta(type):
 
 
 class Automaton(metaclass=AutomatonMeta):
+    """ Base class for automaton types.
+
+    Parameters
+    ----------
+    initial_state : any, optional
+        The initial state for this automaton instance. Defaults to None.
+        Note that if automaton type has no default initial state
+        (specified via :attr:`~automaton.automaton.__default_initial_state__`),
+        this argument must be specified.
+
+    Raises
+    ------
+    DefinitionError
+        The automaton type has no default initial state while no
+        custom initial state specified during construction *or* the
+        specified initial state is unknown.
+    """
+
     __default_initial_state__ = None
 
     def __init__(self, initial_state=None):
@@ -118,16 +170,54 @@ class Automaton(metaclass=AutomatonMeta):
 
     @property
     def state(self):
+        """ Gets the current state of the automaton instance.
+
+        Returns
+        -------
+        any
+            The current state.
+        """
         return self._state
 
     @state.setter
     def state(self, next_state):
+        """ Sets the current state of the automaton instance.
+
+        Parameters
+        ----------
+        next_state: any
+            The state to be set as automaton's state.
+
+        Returns
+        -------
+        any
+            The current state.
+
+        Raises
+        ------
+        InvalidTransitionError
+            If the specified state is incompatible given the
+            automaton's transitions.
+        """
         transition = (self.state, next_state)
         if transition not in self.__transitions__:  # pylint: disable=no-member
             raise InvalidTransitionError("No event {} found.".format(transition))
         self._state = next_state
 
     def event(self, do_event):
+        """ Signals the occurrence of an event and evolves the automaton
+        to the destination state.
+
+        Parameters
+        ----------
+        do_event : any
+            The event to be performed on the automaton.
+
+        Raises
+        ------
+        InvalidTransitionError
+            The specified event is unknown.
+        """
         if do_event not in self.events():
             raise InvalidTransitionError("Unrecognized event '{}'.".format(do_event))
         next_state = self.__events__[do_event][1]  # pylint: disable=no-member
@@ -135,16 +225,44 @@ class Automaton(metaclass=AutomatonMeta):
 
     @classmethod
     def states(cls):
+        """ Gives the automaton state set.
+
+        Returns
+        -------
+        iter
+            The iterator over the state set.
+        """
         yield from cls.__states__  # pylint: disable=no-member
 
     @classmethod
     def events(cls):
+        """ Gives the automaton events set.
+
+        Returns
+        -------
+        iter
+            The iterator over the events set.
+        """
         yield from cls.__events__  # pylint: disable=no-member
 
     @classmethod
     def transitions(cls):
+        """ Gives the automaton transition set.
+
+        Returns
+        -------
+        iter
+            The iterator over the transition set.
+        """
         yield from cls.__transitions__  # pylint: disable=no-member
 
     @classmethod
     def get_default_initial_state(cls):
+        """ Gives the automaton default initial state.
+
+        Returns
+        -------
+        any
+            The automaton default initial state.
+        """
         return cls.__default_initial_state__
