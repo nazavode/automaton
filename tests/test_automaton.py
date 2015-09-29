@@ -30,6 +30,13 @@ def test_definition():
     assert "event1" in Simple.events()
     assert "event2" in Simple.events()
     assert "event3" not in Simple.events()
+    assert "state_a" in Simple.states()
+    assert "state_b" in Simple.states()
+    assert "state_c" in Simple.states()
+    assert "unknown" not in Simple.states()
+    assert ("state_a", "state_b") in Simple.transitions()
+    assert ("state_b", "state_c") in Simple.transitions()
+    assert ("unknown", "unknown") not in Simple.transitions()
     # Instantiation
     simple_obj = Simple()
     # Class properties through instance
