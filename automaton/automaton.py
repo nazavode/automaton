@@ -30,6 +30,10 @@ __all__ = (
 Event = namedtuple("Event", ["source_state", "dest_state"])
 
 
+def is_connected(events):
+    return True
+
+
 class AutomatonMeta(type):
     def __new__(mcs, class_name, class_bases, class_dict):
         cls = super().__new__(mcs, class_name, class_bases, class_dict)
@@ -47,6 +51,9 @@ class AutomatonMeta(type):
                 # Update mappings
                 events_to_states[attr] = transition
                 states_to_events[transition] = attr
+        # Check graph connection
+        if not is_connected(events_to_states):
+            raise DefinitionError("State graph must be connected.")
         # Internal class members
         cls.__states__ = states
         cls.__events__ = events_to_states

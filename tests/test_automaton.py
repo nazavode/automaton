@@ -62,12 +62,12 @@ def test_initial_state():
         assert noinit_obj.state == state
 
 
-# def test_unconnected():
-#     # The graph representing the FSM must be connected.
-#     with pytest.raises(DefinitionError):
-#         class Unconnected(Automaton):
-#             cluster1 = Event("state_a", "state_b")
-#             cluster2 = Event("state_c", "state_d")
+def test_unconnected():
+    # The graph representing the FSM must be connected.
+    with pytest.raises(DefinitionError):
+        class Unconnected(Automaton):
+            cluster1 = Event("state_a", "state_b")
+            cluster2 = Event("state_c", "state_d")
 
 
 def test_multiple_events():
