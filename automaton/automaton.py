@@ -41,19 +41,19 @@ def connected_components(edges):
     #
     parent = {node: node for node in nodes}
     #
-    def find(n):
+    def find(n):  # pylint: disable=invalid-name
         if parent[n] == n:
             return n
         else:
             return find(parent[n])
     #
-    def union(x, y):
+    def union(x, y):  # pylint: disable=invalid-name
         x_root = find(x)
         y_root = find(y)
         parent[x_root] = y_root
     #
-    for u in nodes:
-        for v in inbound[u]:
+    for u in nodes:  # pylint: disable=invalid-name
+        for v in inbound[u]:  # pylint: disable=invalid-name
             if find(u) != find(v):
                 union(u, v)
     components = set()
@@ -111,7 +111,7 @@ class Automaton(metaclass=AutomatonMeta):
             else:
                 initial_state = self.__default_initial_state__
         # Check initial state correctness
-        if initial_state not in self.__states__:
+        if initial_state not in self.__states__:  # pylint: disable=no-member
             raise DefinitionError("Initial state '{}' unknown.".format(initial_state))
         #
         self._state = initial_state
@@ -123,27 +123,27 @@ class Automaton(metaclass=AutomatonMeta):
     @state.setter
     def state(self, next_state):
         transition = (self.state, next_state)
-        if transition not in self.__transitions__:
+        if transition not in self.__transitions__:  # pylint: disable=no-member
             raise InvalidTransitionError("No event {} found.".format(transition))
         self._state = next_state
 
     def event(self, do_event):
         if do_event not in self.events():
             raise InvalidTransitionError("Unrecognized event '{}'.".format(do_event))
-        next_state = self.__events__[do_event][1]
+        next_state = self.__events__[do_event][1]  # pylint: disable=no-member
         self.state = next_state
 
     @classmethod
     def states(cls):
-        yield from cls.__states__
+        yield from cls.__states__  # pylint: disable=no-member
 
     @classmethod
     def events(cls):
-        yield from cls.__events__
+        yield from cls.__events__  # pylint: disable=no-member
 
     @classmethod
     def transitions(cls):
-        yield from cls.__transitions__
+        yield from cls.__transitions__  # pylint: disable=no-member
 
     @classmethod
     def get_default_initial_state(cls):
