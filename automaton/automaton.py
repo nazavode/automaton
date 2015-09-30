@@ -115,18 +115,24 @@ class AutomatonMeta(type):
                 states_to_events[transition] = attr
         if len(states) != 0:
             # Ok, we are treating the class that defines the actual FSM.
+            #
             # 1. Check graph connection:
+            #
             components = connected_components(states_to_events.keys())
             if len(components) != 1:
                 raise DefinitionError("The state graph contains {} connected components: "
                                       "it must be connected.".format(len(components)))
+            #
             # 2. Internal class members:
+            #
             cls.__states__ = states
             cls.__events__ = events_to_states
             cls.__transitions__ = states_to_events
             if cls.__default_initial_state__ is not None and cls.__default_initial_state__ not in cls.__states__:
                 raise DefinitionError("Default initial state '{}' unknown.".format(cls.__default_initial_state__))
+            #
             # 3. Events interface:
+            #
 
             def create_lambda(ev):  # pylint: disable=invalid-name, missing-docstring
                 return lambda slf: slf.event(ev)
