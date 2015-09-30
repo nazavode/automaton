@@ -4,7 +4,7 @@ Automaton
 
 A minimal Python finite-state machine.
 
-**Automaton requires Python version 3.4 or greater.**
+*Automaton requires Python version 3.4 or greater.*
 
 
 |build-status| |coverage-status| |documentation-status| |license-status|
@@ -22,20 +22,28 @@ In order to define an automaton, just subclass a provided base::
         slowdown = Event("green", "yellow")
         stop = Event("yellow", "red")
 
-You're done: you now have a new *automaton* class that can be instantiated and used as a state machine::
+You're done: you now have a new *automaton* definition that can be instantiated and used as a state machine::
 
     >>> crossroads = TrafficLight(initial_state="red")
     >>> crossroads.state
     "red"
 
-The automaton can be operated via *events*::
+The automaton can be operated via *events*: signalling the occurrence of an event to the state machine triggers the
+evolution of the automaton from an initial state to a final state. You can trigger an event calling the class
+attributes themeselves::
 
-    >>> crossroads.event("go")
+    >>> crossroads.go()
     >>> crossroads.state
     "green"
-    >>> crossroads.event("slowdown")
+    >>> crossroads.slowdown()
     >>> crossroads.state
     "yellow"
+
+An alternative way, more convenient if triggering events progammatically, is to call the ``event()`` method::
+
+    >>> crossroads.event("stop")
+    >>> crossroads.state
+    "red"
 
 Documentation
 =============
@@ -45,7 +53,8 @@ You can find the full documentation at http://automaton.readthedocs.org.
 Contributors
 ============
 
-Thanks to `@simone-campagna <http://github.com/simone-campagna>`_.
+Thanks to `@simone-campagna <http://github.com/simone-campagna>`_ for the countless hints.
+
 
 .. _finite-state machine:
     https://en.wikipedia.org/wiki/Finite-state_machine
