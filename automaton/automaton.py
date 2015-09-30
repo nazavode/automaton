@@ -17,7 +17,7 @@
 A minimal Python finite-state machine implementation.
 """
 
-from collections import defaultdict
+from collections import namedtuple, defaultdict
 
 from .exceptions import (
     DefinitionError,
@@ -39,19 +39,18 @@ class EventBoundDelegate(object):
         return self._automaton_instance.event(self._event_name)
 
 
-class Event(object):
-    def __init__(self, source_state, dest_state):
-        self._source_state = source_state
-        self._dest_state = dest_state
-        self._event_name = None
+EventBase = namedtuple("Event", ("source_state", "dest_state"))
+
+
+class Event(EventBase):
+    def __new__(cls, *args, **kwargs):
+        instance = super().__new__(cls, *args, **kwargs)
+        instance._event_name = None
+        return instance
 
     @property
-    def source_state(self):
-        return self._source_state
-
-    @property
-    def dest_state(self):
-        return self._dest_state
+    def name(self):
+        return self._event_name
 
     def bind(self, name):
         self._event_name = name
@@ -129,39 +128,30 @@ class AutomatonMeta(type):
 
     def __new__(mcs, class_name, class_bases, class_dict):
         cls = super().__new__(mcs, class_name, class_bases, class_dict)
-        events_to_states = {}
-        states_to_events = {}
+        events = {}
         states = set()
         for attr in dir(cls):
             value = getattr(cls, attr)
             if isinstance(value, Event):
-                # Define transition
-                transition = (value.source_state, value.dest_state)
-                # Add states
-                states.add(transition[0])
-                states.add(transition[1])
-                # Update mappings
-                events_to_states[attr] = transition
-                states_to_events[transition] = attr
-                # Bind event names
+                # Important: bind event to its name as a class member
                 value.bind(attr)
-        if len(states) != 0:
-            # Ok, we are treating the class that defines the actual FSM.
-            #
-            # 1. Check graph connection:
-            #
-            components = connected_components(states_to_events.keys())
+                # Collect states
+                states.add(value[0])
+                states.add(value[1])
+                # Collect events
+                events[attr] = value
+        if len(states) != 0:  # if we are dealing with an automaton definition class...
+            # 1. Setup class members:
+            cls.__states__ = states
+            cls.__events__ = events
+            if cls.__default_initial_state__ is not None \
+                    and cls.__default_initial_state__ not in cls.__states__:
+                raise DefinitionError("Default initial state '{}' unknown.".format(cls.__default_initial_state__))
+            # 2. Check states graph consistency:
+            components = connected_components(events.values())
             if len(components) != 1:
                 raise DefinitionError("The state graph contains {} connected components: "
                                       "it must be connected.".format(len(components)))
-            #
-            # 2. Internal class members:
-            #
-            cls.__states__ = states
-            cls.__events__ = events_to_states
-            cls.__transitions__ = states_to_events
-            if cls.__default_initial_state__ is not None and cls.__default_initial_state__ not in cls.__states__:
-                raise DefinitionError("Default initial state '{}' unknown.".format(cls.__default_initial_state__))
         return cls
 
 
@@ -221,32 +211,7 @@ class Automaton(metaclass=AutomatonMeta):
         """
         return self._state
 
-    @state.setter
-    def state(self, next_state):
-        """ Sets the current state of the automaton instance.
-
-        Parameters
-        ----------
-        next_state: any
-            The state to be set as automaton's state.
-
-        Returns
-        -------
-        any
-            The current state.
-
-        Raises
-        ------
-        InvalidTransitionError
-            If the specified state is incompatible given the
-            automaton's transitions.
-        """
-        transition = (self.state, next_state)
-        if transition not in self.__transitions__:  # pylint: disable=no-member
-            raise InvalidTransitionError("No event {} found.".format(transition))
-        self._state = next_state
-
-    def event(self, do_event):
+    def event(self, event_name):
         """ Signals the occurrence of an event and evolves the automaton
         to the destination state.
 
@@ -260,10 +225,13 @@ class Automaton(metaclass=AutomatonMeta):
         InvalidTransitionError
             The specified event is unknown.
         """
-        if do_event not in self.__events__:  # pylint: disable=no-member
-            raise InvalidTransitionError("Unrecognized event '{}'.".format(do_event))
-        next_state = self.__events__[do_event][1]  # pylint: disable=no-member
-        self.state = next_state
+        if event_name not in self.__events__:  # pylint: disable=no-member
+            raise InvalidTransitionError("Unrecognized event '{}'.".format(event_name))
+        transition = self.__events__[event_name]  # pylint: disable=no-member
+        if transition.source_state != self._state:
+            raise InvalidTransitionError(
+                "The specified event '{}' is invalid in current state '{}'.".format(transition, self._state))
+        self._state = transition.dest_state
 
     @classmethod
     def states(cls):
@@ -286,17 +254,6 @@ class Automaton(metaclass=AutomatonMeta):
             The iterator over the events set.
         """
         yield from cls.__events__  # pylint: disable=no-member
-
-    @classmethod
-    def transitions(cls):
-        """ Gives the automaton transition set.
-
-        Returns
-        -------
-        iter
-            The iterator over the transition set.
-        """
-        yield from cls.__transitions__  # pylint: disable=no-member
 
     @classmethod
     def get_default_initial_state(cls):
