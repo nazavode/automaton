@@ -12,7 +12,7 @@ A minimal Python finite-state machine.
 Automaton is an easy to use, easy to maintain `finite-state machine`_ package for Python 3.4 or greater.
 The goal here is to have something minimal to enforce correctness and to avoid clutter from useless features.
 
-In order to define an automaton, just subclass a provided base::
+In order to define an automaton, just subclass a provided base:
 
     from automaton import *
 
@@ -22,7 +22,7 @@ In order to define an automaton, just subclass a provided base::
         slowdown = Event("green", "yellow")
         stop = Event("yellow", "red")
 
-You're done: you now have a new *automaton* definition that can be instantiated and used as a state machine::
+You're done: you now have a new *automaton* definition that can be instantiated and used as a state machine:
 
     >>> crossroads = TrafficLight(initial_state="red")
     >>> crossroads.state
@@ -30,7 +30,7 @@ You're done: you now have a new *automaton* definition that can be instantiated 
 
 The automaton can be operated via *events*: signalling the occurrence of an event to the state machine triggers the
 evolution of the automaton from an initial state to a final state. You can trigger an event calling the class
-attributes themeselves::
+attributes themeselves:
 
     >>> crossroads.go()
     >>> crossroads.state
@@ -39,7 +39,7 @@ attributes themeselves::
     >>> crossroads.state
     "yellow"
 
-An alternative way, more convenient if triggering events progammatically, is to call the ``event()`` method::
+An alternative way, more convenient if triggering events progammatically, is to call the ``event()`` method:
 
     >>> crossroads.event("stop")
     >>> crossroads.state
@@ -47,10 +47,10 @@ An alternative way, more convenient if triggering events progammatically, is to 
 
 Automaton enforces correctness in two ways:
 
-1. checking that the requested event is *valid*, that is a transition from the current state to the destination state
-   exists in the state machine definition;
-#. checking whether the *state graph* representing the automaton is *connected* or not (that is it must have only
-   one `connected component`_).
+    1. checking that the requested event is *valid*, that is a transition from the current state to the destination
+       state exists in the state machine definition;
+    #. checking whether the *state graph* representing the automaton is *connected* or not (that is it must have only
+       one `connected component`_).
 
 
 Documentation
