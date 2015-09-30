@@ -17,7 +17,6 @@
 A minimal Python finite-state machine implementation.
 """
 
-from types import MethodType
 from collections import namedtuple, defaultdict
 
 from .exceptions import (
@@ -29,7 +28,6 @@ __all__ = (
     "Event",
     "Automaton",
 )
-
 
 Event = namedtuple("Event", ["source_state", "dest_state"])
 """ The class that represents an event. """
@@ -67,20 +65,19 @@ def connected_components(edges):
         nodes.add(dest_node)
         # Inbound grade
         inbound[dest_node].add(source_node)
-    #
     parent = {node: node for node in nodes}
-    #
+
     def find(n):  # pylint: disable=invalid-name, missing-docstring
         if parent[n] == n:
             return n
         else:
             return find(parent[n])
-    #
+
     def union(x, y):  # pylint: disable=invalid-name, missing-docstring
         x_root = find(x)
         y_root = find(y)
         parent[x_root] = y_root
-    #
+
     for u in nodes:  # pylint: disable=invalid-name
         for v in inbound[u]:  # pylint: disable=invalid-name
             if find(u) != find(v):
@@ -99,6 +96,7 @@ class AutomatonMeta(type):
     The :meth:`~automaton.automaton.AutomatonMeta.__new__` method builds the
     actual finite-state machine based on the user-provided events definition.
     """
+
     def __new__(mcs, class_name, class_bases, class_dict):
         cls = super().__new__(mcs, class_name, class_bases, class_dict)
         events_to_states = {}
@@ -129,8 +127,10 @@ class AutomatonMeta(type):
             if cls.__default_initial_state__ is not None and cls.__default_initial_state__ not in cls.__states__:
                 raise DefinitionError("Default initial state '{}' unknown.".format(cls.__default_initial_state__))
             # 3. Events interface:
-            def create_lambda(ev):
+
+            def create_lambda(ev):  # pylint: disable=invalid-name, missing-docstring
                 return lambda slf: slf.event(ev)
+
             for event in cls.__events__:
                 setattr(cls, event, create_lambda(event))
         return cls
