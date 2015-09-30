@@ -30,7 +30,10 @@ __all__ = (
 )
 
 
-class EventBoundDelegate(object):
+class EventBoundDelegate(object):  # pylint: disable=too-few-public-methods
+    """ Class that delegates a call to an :class:`~automaton.automaton.Event`
+    bound to a specific :class:`~automaton.automaton.Automaton` definition subclass. """
+
     def __init__(self, automaton_instance, event_name):
         self._automaton_instance = automaton_instance
         self._event_name = event_name
@@ -43,19 +46,47 @@ EventBase = namedtuple("Event", ("source_state", "dest_state"))
 
 
 class Event(EventBase):
+    """ Class that represents a state transition.
+
+     Parameters
+     ----------
+     source_state : any
+         The transition source state.
+     dest_state : any
+         The transition destination state.
+    """
+
     def __new__(cls, *args, **kwargs):
         instance = super().__new__(cls, *args, **kwargs)
-        instance._event_name = None
+        instance._event_name = None  # pylint: disable=protected-access
         return instance
 
     @property
     def name(self):
+        """ The actual user-defined name of the event as an
+        :class:`~automaton.automaton.Automaton` class member.
+        If None, the Event isn't bounded to any specific
+        :class:`~automaton.automaton.Automaton` subclass. """
         return self._event_name
 
     def bind(self, name):
+        """ Binds the :class:`~automaton.automaton.Event` instance
+        to a particular event name.
+
+        .. warning::
+            This method is intended to be called by the automaton
+            definition mechanics.
+
+        Parameters
+        ----------
+        name : str
+            The event name to be bounded.
+        """
         self._event_name = name
 
     def __get__(self, instance, owner):
+        """ Enables the descriptor semantics on
+        :class:`~automaton.automaton.Event` instances. """
         if instance is None:
             return self
         else:
