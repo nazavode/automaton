@@ -47,10 +47,10 @@ An alternative way, more convenient if triggering events progammatically, is to 
 
 Automaton enforces correctness in two ways:
 
-    1. checking that the requested event is *valid*, that is a transition from the current state to the destination
-       state exists in the state machine definition;
-    #. checking whether the *state graph* representing the automaton is *connected* or not (that is it must have only
-       one `connected component`_).
+1. checking that the requested event is *valid*, that is a transition from the current state to the destination
+   state exists in the state machine definition;
+#. checking whether the *state graph* representing the automaton is *connected* or not (that is it must have only 
+   one `connected component`_).
 
 
 Documentation
