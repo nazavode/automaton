@@ -69,7 +69,7 @@ Thanks to `@simone-campagna <http://github.com/simone-campagna>`_ for the countl
     https://en.wikipedia.org/wiki/Finite-state_machine
 
 .. _connected component:
-    https://en.wikipedia.org/wiki/Finite-state_machine
+    https://en.wikipedia.org/wiki/Connected_component_(graph_theory)
 
 .. |build-status| image:: https://travis-ci.org/fmontag451/automaton.svg?branch=master
     :target: https://travis-ci.org/fmontag451/automaton
