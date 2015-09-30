@@ -14,13 +14,13 @@ The goal here is to have something minimal to enforce correctness and to avoid c
 
 In order to define an automaton, just subclass a provided base:
 
-    from automaton import *
-
-    class TrafficLight(Automaton):
-
-        go = Event("red", "green")
-        slowdown = Event("green", "yellow")
-        stop = Event("yellow", "red")
+    >>> from automaton import *
+    >>>
+    >>> class TrafficLight(Automaton):
+    >>>
+    >>>     go = Event("red", "green")
+    >>>     slowdown = Event("green", "yellow")
+    >>>     stop = Event("yellow", "red")
 
 You're done: you now have a new *automaton* definition that can be instantiated and used as a state machine:
 
