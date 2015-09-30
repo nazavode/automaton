@@ -174,7 +174,19 @@ def test_transition():
     assert crossroads.state == "green"
 
 
-def test_transition_methods():
+def test_event_binding():
+    class TrafficLight(Automaton):
+        __default_initial_state__ = "red"
+        go = Event("red", "green")
+        slowdown = Event("green", "yellow")
+        stop = Event("yellow", "red")
+
+    assert TrafficLight.go.name == "go"
+    assert TrafficLight.slowdown.name == "slowdown"
+    assert TrafficLight.stop.name == "stop"
+
+
+def test_event_methods():
     class TrafficLight(Automaton):
         __default_initial_state__ = "red"
         go = Event("red", "green")
