@@ -17,7 +17,7 @@
 A minimal Python finite-state machine implementation.
 """
 
-from collections import namedtuple, defaultdict
+from collections import defaultdict
 
 from .exceptions import (
     DefinitionError,
@@ -29,7 +29,40 @@ __all__ = (
     "Automaton",
 )
 
-Event = namedtuple("Event", ["source_state", "dest_state"])
+
+class EventDelegate(object):
+    def __init__(self, automaton_instance, event_name):
+        self._automaton_instance = automaton_instance
+        self._event_name = event_name
+
+    def __call__(self, *args, **kwargs):
+        return self._automaton_instance.event(self._event_name)
+
+
+class Event(object):
+    def __init__(self, source_state, dest_state):
+        self._source_state = source_state
+        self._dest_state = dest_state
+        self._event_name = None
+
+    @property
+    def source_state(self):
+        return self._source_state
+
+    @property
+    def dest_state(self):
+        return self._dest_state
+
+    def bind(self, name):
+        self._event_name = name
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        else:
+            return EventDelegate(instance, self._event_name)
+
+
 """ The class that represents an event. """
 
 
@@ -113,6 +146,8 @@ class AutomatonMeta(type):
                 # Update mappings
                 events_to_states[attr] = transition
                 states_to_events[transition] = attr
+                # Bind event names
+                value.bind(attr)
         if len(states) != 0:
             # Ok, we are treating the class that defines the actual FSM.
             #
@@ -130,15 +165,6 @@ class AutomatonMeta(type):
             cls.__transitions__ = states_to_events
             if cls.__default_initial_state__ is not None and cls.__default_initial_state__ not in cls.__states__:
                 raise DefinitionError("Default initial state '{}' unknown.".format(cls.__default_initial_state__))
-            #
-            # 3. Events interface:
-            #
-
-            def create_lambda(ev):  # pylint: disable=invalid-name, missing-docstring
-                return lambda slf: slf.event(ev)
-
-            for event in cls.__events__:
-                setattr(cls, event, create_lambda(event))
         return cls
 
 
