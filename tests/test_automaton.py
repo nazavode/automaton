@@ -175,3 +175,29 @@ def test_transition():
     with pytest.raises(InvalidTransitionError):
         crossroads.event("unknown")
     assert crossroads.state == "green"
+
+
+def test_transition_methods():
+    class TrafficLight(Automaton):
+        __default_initial_state__ = "red"
+        go = Event("red", "green")
+        slowdown = Event("green", "yellow")
+        stop = Event("yellow", "red")
+
+    crossroads = TrafficLight()
+    # Initial state
+    assert crossroads.state == "red"
+    # Transitions
+    crossroads.go()
+    assert crossroads.state == "green"
+    crossroads.slowdown()
+    assert crossroads.state == "yellow"
+    crossroads.stop()
+    assert crossroads.state == "red"
+    crossroads.go()
+    assert crossroads.state == "green"
+    # Invalid transitions
+    with pytest.raises(InvalidTransitionError):
+        crossroads.stop()
+    assert crossroads.state == "green"
+

@@ -17,6 +17,7 @@
 A minimal Python finite-state machine implementation.
 """
 
+from types import MethodType
 from collections import namedtuple, defaultdict
 
 from .exceptions import (
@@ -159,7 +160,9 @@ class Automaton(metaclass=AutomatonMeta):
     __default_initial_state__ = None
 
     def __init__(self, initial_state=None):
-        # Setup initial state
+        #
+        # 1. Initial state setup
+        #
         if initial_state is None:
             if self.__default_initial_state__ is None:
                 raise DefinitionError(
@@ -171,8 +174,13 @@ class Automaton(metaclass=AutomatonMeta):
         # Check initial state correctness
         if initial_state not in self.__states__:  # pylint: disable=no-member
             raise DefinitionError("Initial state '{}' unknown.".format(initial_state))
-        #
+        # And finally set initial state
         self._state = initial_state
+        #
+        # 2. Events interface
+        #
+        for event in self.__events__:  # pylint: disable=no-member
+            setattr(self, event, MethodType(lambda slf, ev=event: slf.event(ev), self))
 
     @property
     def state(self):
@@ -224,7 +232,7 @@ class Automaton(metaclass=AutomatonMeta):
         InvalidTransitionError
             The specified event is unknown.
         """
-        if do_event not in self.events():
+        if do_event not in self.__events__:  # pylint: disable=no-member
             raise InvalidTransitionError("Unrecognized event '{}'.".format(do_event))
         next_state = self.__events__[do_event][1]  # pylint: disable=no-member
         self.state = next_state
