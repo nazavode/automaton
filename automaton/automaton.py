@@ -30,7 +30,7 @@ __all__ = (
 )
 
 
-class EventDelegate(object):
+class EventBoundDelegate(object):
     def __init__(self, automaton_instance, event_name):
         self._automaton_instance = automaton_instance
         self._event_name = event_name
@@ -60,10 +60,7 @@ class Event(object):
         if instance is None:
             return self
         else:
-            return EventDelegate(instance, self._event_name)
-
-
-""" The class that represents an event. """
+            return EventBoundDelegate(instance, self._event_name)
 
 
 def connected_components(edges):
