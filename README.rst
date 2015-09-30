@@ -45,10 +45,19 @@ An alternative way, more convenient if triggering events progammatically, is to 
     >>> crossroads.state
     "red"
 
+Automaton enforces correctness in two ways:
+
+1. checking that the requested event is *valid*, e.g. a transition from the current state to the destination state
+    exists in the state machine definition;
+#. checking whether the *state graph* representing the automaton is *connected* or not
+   (e.g.: it must have only one `connected component`_).
+
+
 Documentation
 =============
 
 You can find the full documentation at http://automaton.readthedocs.org.
+
 
 Contributors
 ============
@@ -57,6 +66,9 @@ Thanks to `@simone-campagna <http://github.com/simone-campagna>`_ for the countl
 
 
 .. _finite-state machine:
+    https://en.wikipedia.org/wiki/Finite-state_machine
+
+.. _connected component:
     https://en.wikipedia.org/wiki/Finite-state_machine
 
 .. |build-status| image:: https://travis-ci.org/fmontag451/automaton.svg?branch=master
