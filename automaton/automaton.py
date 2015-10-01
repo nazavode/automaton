@@ -199,6 +199,10 @@ class AutomatonMeta(type):
             if cls.__default_initial_state__ is not None \
                     and cls.__default_initial_state__ not in cls.__states__:
                 raise DefinitionError("Default initial state '{}' unknown.".format(cls.__default_initial_state__))
+            if cls.__default_accepting_states__ is not None:
+                for state in cls.__default_accepting_states__:
+                    if state not in cls.__states__:
+                        raise DefinitionError("Default accepting state '{}' unknown.".format(state))
             # 2. Check states graph consistency:
             components = connected_components(events.values())
             if len(components) != 1:
@@ -224,6 +228,12 @@ class Automaton(metaclass=AutomatonMeta):
         (specified via :attr:`~automaton.automaton.__default_initial_state__`),
         this argument must be specified.
 
+    accepting_states : iterable, optional
+        The accepting states for this automaton instance. Defaults to None.
+        Note that if automaton type has default accepting states
+        (specified via :attr:`~automaton.automaton.__default_accepting_states__`),
+        this argument takes precedence over that.
+
     Raises
     ------
     DefinitionError
@@ -233,8 +243,12 @@ class Automaton(metaclass=AutomatonMeta):
     """
 
     __default_initial_state__ = None
+    """any: The default initial state for the automaton type."""
 
-    def __init__(self, initial_state=None):
+    __default_accepting_states__ = None
+    """iterable: The default accepting states for the automaton type."""
+
+    def __init__(self, initial_state=None, accepting_states=None):
         #
         # 1. Initial state setup
         #
@@ -249,8 +263,21 @@ class Automaton(metaclass=AutomatonMeta):
         # Check initial state correctness
         if initial_state not in self.__states__:  # pylint: disable=no-member
             raise DefinitionError("Initial state '{}' unknown.".format(initial_state))
-        # And finally set initial state
+        # ...and finally set initial state.
         self._state = initial_state
+        #
+        # 2. Accepting states setup
+        #
+        if accepting_states is None:
+            if self.__default_accepting_states__ is None:
+                accepting_states = ()
+            else:
+                accepting_states = self.__default_accepting_states__
+        for state in accepting_states:
+            if state not in self.__states__:  # pylint: disable=no-member
+                raise DefinitionError("Accepting state '{}' unknown.".format(state))
+        # ...and finally set accepting states.
+        self._accepting_states = frozenset(accepting_states)
 
     @property
     def state(self):
@@ -262,6 +289,18 @@ class Automaton(metaclass=AutomatonMeta):
             The current state.
         """
         return self._state
+
+    @property
+    def is_accepted(self):
+        """ Gets the current automaton's acceptance state.
+
+        Returns
+        -------
+        bool
+            True if the current state is an accepting state, False otherwise.
+        """
+        return self._state in self._accepting_states
+
 
     def event(self, event_name):
         """ Signals the occurrence of an event and evolves the automaton

@@ -23,6 +23,7 @@ from automaton import *
 def traffic_light():
     class TrafficLight(Automaton):
         __default_initial_state__ = "red"
+        __default_accepting_states__ = ("red", "green")
         go = Event("red", "green")
         slowdown = Event("green", "yellow")
         stop = Event("yellow", "red")
@@ -202,3 +203,65 @@ def test_event_methods(traffic_light):
     with pytest.raises(InvalidTransitionError):
         crossroads.stop()
     assert crossroads.state == "green"
+
+
+def test_invalid_default_accepting_states():
+    with pytest.raises(DefinitionError):
+        class Wrong(Automaton):
+            __default_accepting_states__ = ("event1", "unknown")
+            event1 = Event("state_a", "state_b")
+
+
+def test_default_accepting_states(traffic_light):
+    crossroads = traffic_light()
+    # Initial state
+    assert crossroads.state == "red"
+    assert crossroads.is_accepted
+    # Transitions
+    crossroads.go()
+    assert crossroads.state == "green"
+    assert crossroads.is_accepted
+    crossroads.slowdown()
+    assert crossroads.state == "yellow"
+    assert not crossroads.is_accepted
+    crossroads.stop()
+    assert crossroads.state == "red"
+    assert crossroads.is_accepted
+    crossroads.go()
+    assert crossroads.state == "green"
+    assert crossroads.is_accepted
+    # Invalid transitions
+    with pytest.raises(InvalidTransitionError):
+        crossroads.stop()
+    assert crossroads.state == "green"
+    assert crossroads.is_accepted
+
+
+def test_custom_accepting_states(traffic_light):
+    crossroads = traffic_light(accepting_states=("yellow", ))
+    # Initial state
+    assert crossroads.state == "red"
+    assert not crossroads.is_accepted
+    # Transitions
+    crossroads.go()
+    assert crossroads.state == "green"
+    assert not crossroads.is_accepted
+    crossroads.slowdown()
+    assert crossroads.state == "yellow"
+    assert crossroads.is_accepted
+    crossroads.stop()
+    assert crossroads.state == "red"
+    assert not crossroads.is_accepted
+    crossroads.go()
+    assert crossroads.state == "green"
+    assert not crossroads.is_accepted
+    # Invalid transitions
+    with pytest.raises(InvalidTransitionError):
+        crossroads.stop()
+    assert crossroads.state == "green"
+    assert not crossroads.is_accepted
+
+
+def test_invalid_custom_accepting_states(traffic_light):
+    with pytest.raises(DefinitionError):
+        crossroads = traffic_light(accepting_states=("yellow", "unknown"))
