@@ -186,6 +186,12 @@ def test_event_binding(traffic_light):
     assert traffic_light.stop.name == "stop"
 
 
+def test_event_descriptor(traffic_light):
+    crossroads = traffic_light()
+    with pytest.raises(AttributeError):
+        crossroads.go = None
+
+
 def test_event_methods(traffic_light):
     crossroads = traffic_light()
     # Initial state
