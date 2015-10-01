@@ -19,6 +19,17 @@ import pytest
 from automaton import *
 
 
+@pytest.fixture
+def traffic_light():
+    class TrafficLight(Automaton):
+        __default_initial_state__ = "red"
+        go = Event("red", "green")
+        slowdown = Event("green", "yellow")
+        stop = Event("yellow", "red")
+
+    return TrafficLight
+
+
 def test_definition():
     class Simple(Automaton):
         __default_initial_state__ = "state_a"
@@ -146,14 +157,8 @@ def test_auto_arc():
     assert auto_obj.state == "state_a"
 
 
-def test_transition():
-    class TrafficLight(Automaton):
-        __default_initial_state__ = "red"
-        go = Event("red", "green")
-        slowdown = Event("green", "yellow")
-        stop = Event("yellow", "red")
-
-    crossroads = TrafficLight()
+def test_transition(traffic_light):
+    crossroads = traffic_light()
     # Initial state
     assert crossroads.state == "red"
     # Transitions
@@ -174,26 +179,14 @@ def test_transition():
     assert crossroads.state == "green"
 
 
-def test_event_binding():
-    class TrafficLight(Automaton):
-        __default_initial_state__ = "red"
-        go = Event("red", "green")
-        slowdown = Event("green", "yellow")
-        stop = Event("yellow", "red")
-
-    assert TrafficLight.go.name == "go"
-    assert TrafficLight.slowdown.name == "slowdown"
-    assert TrafficLight.stop.name == "stop"
+def test_event_binding(traffic_light):
+    assert traffic_light.go.name == "go"
+    assert traffic_light.slowdown.name == "slowdown"
+    assert traffic_light.stop.name == "stop"
 
 
-def test_event_methods():
-    class TrafficLight(Automaton):
-        __default_initial_state__ = "red"
-        go = Event("red", "green")
-        slowdown = Event("green", "yellow")
-        stop = Event("yellow", "red")
-
-    crossroads = TrafficLight()
+def test_event_methods(traffic_light):
+    crossroads = traffic_light()
     # Initial state
     assert crossroads.state == "red"
     # Transitions
@@ -209,4 +202,3 @@ def test_event_methods():
     with pytest.raises(InvalidTransitionError):
         crossroads.stop()
     assert crossroads.state == "green"
-
