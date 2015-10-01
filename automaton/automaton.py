@@ -301,7 +301,6 @@ class Automaton(metaclass=AutomatonMeta):
         """
         return self._state in self._accepting_states
 
-
     def event(self, event_name):
         """ Signals the occurrence of an event and evolves the automaton
         to the destination state.
