@@ -59,6 +59,7 @@ class Event(EventBase):
     def __new__(cls, *args, **kwargs):
         instance = super().__new__(cls, *args, **kwargs)
         instance._event_name = None  # pylint: disable=protected-access
+        instance._event_delegate = None  # pylint: disable=protected-access
         return instance
 
     @property
@@ -90,7 +91,9 @@ class Event(EventBase):
         if instance is None:
             return self
         else:
-            return EventBoundDelegate(instance, self._event_name)
+            if self._event_delegate is None:
+                self._event_delegate = EventBoundDelegate(instance, self._event_name)
+            return self._event_delegate
 
 
 def connected_components(edges):
