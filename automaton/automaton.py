@@ -48,12 +48,15 @@ EventBase = namedtuple("Event", ("source_state", "dest_state"))
 class Event(EventBase):
     """ Class that represents a state transition.
 
-     Parameters
-     ----------
-     source_state : any
-         The transition source state.
-     dest_state : any
-         The transition destination state.
+    .. important::
+        This is a read-only data descriptor type.
+
+    Parameters
+    ----------
+    source_state : any
+        The transition source state.
+    dest_state : any
+        The transition destination state.
     """
 
     def __new__(cls, *args, **kwargs):
@@ -94,6 +97,17 @@ class Event(EventBase):
             if self._event_delegate is None:
                 self._event_delegate = EventBoundDelegate(instance, self._event_name)
             return self._event_delegate
+
+    def __set__(self, instance, value):
+        """ Enables the descriptor semantics on
+        :class:`~automaton.automaton.Event` instances.
+
+        Raises
+        ------
+        AttributeError
+            To enforce read-only data descriptor semantics.
+        """
+        raise AttributeError("Can't set attribute")
 
 
 def connected_components(edges):
@@ -158,8 +172,12 @@ class AutomatonMeta(type):
 
     The :meth:`~automaton.automaton.AutomatonMeta.__new__` method builds the
     actual finite-state machine based on the user-provided events definition.
-    """
 
+    Raises
+    ------
+    DefinitionError
+        If the states graph isn't connected (that is leads to unreachable states).
+    """
     def __new__(mcs, class_name, class_bases, class_dict):
         cls = super().__new__(mcs, class_name, class_bases, class_dict)
         events = {}
