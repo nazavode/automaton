@@ -30,18 +30,6 @@ __all__ = (
 )
 
 
-class EventBoundDelegate(object):  # pylint: disable=too-few-public-methods
-    """ Class that delegates a call to an :class:`~automaton.automaton.Event`
-    bound to a specific :class:`~automaton.automaton.Automaton` definition subclass. """
-
-    def __init__(self, automaton_instance, event_name):
-        self._automaton_instance = automaton_instance
-        self._event_name = event_name
-
-    def __call__(self, *args, **kwargs):
-        return self._automaton_instance.event(self._event_name)
-
-
 EventBase = namedtuple("Event", ("source_state", "dest_state"))
 
 
@@ -95,7 +83,9 @@ class Event(EventBase):
             return self
         else:
             if self._event_delegate is None:
-                self._event_delegate = EventBoundDelegate(instance, self._event_name)
+                def make_closure(inst, ev):  # pylint: disable=invalid-name, missing-docstring
+                    return lambda: inst.event(ev)
+                self._event_delegate = make_closure(instance, self._event_name)
             return self._event_delegate
 
     def __set__(self, instance, value):
