@@ -91,5 +91,5 @@ if __name__ == "__main__":
             'Programming Language :: Python :: 3.4',
             'Operating System :: OS Independent',
         ],
-        keywords='configuration files',
+        keywords='automata automaton statemachine',
     )
