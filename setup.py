@@ -64,19 +64,32 @@ if __name__ == "__main__":
 
     # Final setup
     setup(
-        name="automaton",
+        name="python-automaton",
         version=version,
         requires=[],
-        description="Minimal finite-state machine",
+        description="Minimal finite-state machines",
         author="Federico Ficarelli",
         author_email="toroidh@gmail.com",
         install_requires=read_requirements('install'),
         package_data={},
         # data_files=data_files,
-        url="...",
-        download_url='...',
+        url="https://github.com/fmontag451/automaton",
         packages=packages,
         scripts=scripts,
-        # tests_require=['tox'],
-        # cmdclass = {'test': Tox},
+        classifiers=[
+            # status:
+            #   3 - Alpha
+            #   4 - Beta
+            #   5 - Production/Stable
+            'Development Status :: 4 - Beta',
+            # audience:
+            'Intended Audience :: Developers',
+            'Topic :: Software Development :: Libraries',
+            # license:
+            'License :: OSI Approved :: Apache Software License',
+            # language:
+            'Programming Language :: Python :: 3.4',
+            'Operating System :: OS Independent',
+        ],
+        keywords='configuration files',
     )
