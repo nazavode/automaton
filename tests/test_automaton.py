@@ -271,3 +271,33 @@ def test_custom_accepting_states(traffic_light):
 def test_invalid_custom_accepting_states(traffic_light):
     with pytest.raises(DefinitionError):
         crossroads = traffic_light(accepting_states=("yellow", "unknown"))
+
+
+def test_sink_state():
+    sources = ("state_a", "state_b", "state_c", "state_d")
+
+    class Sink(Automaton):
+        event1 = Event(sources, "sink")
+
+    for initial in sources:
+        auto = Sink(initial_state=initial)
+        assert auto.state == initial
+        auto.event1()
+        assert auto.state == "sink"
+        with pytest.raises(InvalidTransitionError):
+            auto.event1()
+
+
+def test_sink_state_complex():
+    class Sink(Automaton):
+        event1 = Event("state_a", "state_b")
+        event2 = Event(("state_a", "state_b", "state_c", "state_d"), "sink1")
+        event3 = Event(("state_a", "state_b", "state_c", "state_d", "sink1"), "sink2")
+
+    auto = Sink(initial_state="state_a")
+    auto.event1()
+    assert auto.state == "state_b"
+    auto.event2()
+    assert auto.state == "sink1"
+    auto.event3()
+    assert auto.state == "sink2"
