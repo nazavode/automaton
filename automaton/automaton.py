@@ -17,7 +17,7 @@
 A minimal Python finite-state machine implementation.
 """
 
-from collections import namedtuple, defaultdict
+from collections import namedtuple, defaultdict, Iterable
 
 from .exceptions import (
     DefinitionError,
@@ -30,7 +30,7 @@ __all__ = (
 )
 
 
-EventBase = namedtuple("Event", ("source_state", "dest_state"))
+EventBase = namedtuple("Event", ("source_states", "dest_state"))
 
 
 class Event(EventBase):
@@ -41,14 +41,17 @@ class Event(EventBase):
 
     Parameters
     ----------
-    source_state : any
+    source_states : any
         The transition source state.
     dest_state : any
         The transition destination state.
     """
 
-    def __new__(cls, *args, **kwargs):
-        instance = super().__new__(cls, *args, **kwargs)
+    def __new__(cls, source_states, dest_state):
+        # Fix source states:
+        if isinstance(source_states, str) or not isinstance(source_states, Iterable):
+            source_states = (source_states, )
+        instance = super().__new__(cls, source_states, dest_state)
         instance._event_name = None  # pylint: disable=protected-access
         instance._event_delegate = None  # pylint: disable=protected-access
         return instance
@@ -82,11 +85,9 @@ class Event(EventBase):
         if instance is None:
             return self
         else:
-            if self._event_delegate is None:
-                def make_closure(inst, ev):  # pylint: disable=invalid-name, missing-docstring
-                    return lambda: inst.event(ev)
-                self._event_delegate = make_closure(instance, self._event_name)
-            return self._event_delegate
+            def make_closure(inst, ev):  # pylint: disable=invalid-name, missing-docstring
+                return lambda: inst.event(ev)
+            return make_closure(instance, self._event_name)
 
     def __set__(self, instance, value):
         """ Enables the descriptor semantics on
@@ -126,12 +127,12 @@ def connected_components(edges):
     """
     inbound = defaultdict(set)
     nodes = set()
-    for source_node, dest_node in edges:
+    for source_nodes, dest_node in edges:
         # Nodes set
-        nodes.add(source_node)
+        nodes.update(source_nodes)
         nodes.add(dest_node)
         # Inbound grade
-        inbound[dest_node].add(source_node)
+        inbound[dest_node].update(source_nodes)
     parent = {node: node for node in nodes}
 
     def find(n):  # pylint: disable=invalid-name, missing-docstring
@@ -178,7 +179,7 @@ class AutomatonMeta(type):
                 # Important: bind event to its name as a class member
                 value.bind(attr)
                 # Collect states
-                states.add(value[0])
+                states.update(value[0])  # Iterable of sources states, let's update the set
                 states.add(value[1])
                 # Collect events
                 events[attr] = value
@@ -308,7 +309,7 @@ class Automaton(metaclass=AutomatonMeta):
         if event_name not in self.__events__:  # pylint: disable=no-member
             raise InvalidTransitionError("Unrecognized event '{}'.".format(event_name))
         transition = self.__events__[event_name]  # pylint: disable=no-member
-        if transition.source_state != self._state:
+        if self._state not in transition.source_states:
             raise InvalidTransitionError(
                 "The specified event '{}' is invalid in current state '{}'.".format(transition, self._state))
         self._state = transition.dest_state
