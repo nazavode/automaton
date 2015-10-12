@@ -301,3 +301,29 @@ def test_sink_state_complex():
     assert auto.state == "sink1"
     auto.event3()
     assert auto.state == "sink2"
+
+
+def test_sink_state_loop():
+    class Sink(Automaton):
+        event1 = Event("state_a", "state_b")
+        event2 = Event(("state_a", "state_b", "state_c", "state_d"), "sink1")
+        event3 = Event(("state_a", "state_b", "state_c", "state_d", "sink1"), "sink2")
+        event4 = Event("sink2", "state_a")
+
+    auto = Sink(initial_state="state_a")
+    auto.event1()
+    assert auto.state == "state_b"
+    auto.event2()
+    assert auto.state == "sink1"
+    auto.event3()
+    assert auto.state == "sink2"
+    auto.event4()
+    assert auto.state == "state_a"
+    auto.event1()
+    assert auto.state == "state_b"
+    auto.event2()
+    assert auto.state == "sink1"
+    auto.event3()
+    assert auto.state == "sink2"
+    auto.event4()
+    assert auto.state == "state_a"
