@@ -17,8 +17,11 @@
 A minimal Python finite-state machine implementation.
 """
 
-from collections import namedtuple, defaultdict, Iterable
+from collections import namedtuple, Iterable
 
+from .graph import (
+    connected_components,
+)
 from .exceptions import (
     DefinitionError,
     InvalidTransitionError,
@@ -50,7 +53,7 @@ class Event(EventBase):
     def __new__(cls, source_states, dest_state):
         # Fix source states:
         if isinstance(source_states, str) or not isinstance(source_states, Iterable):
-            source_states = (source_states, )
+            source_states = (source_states,)
         instance = super().__new__(cls, source_states, dest_state)
         instance._event_name = None  # pylint: disable=protected-access
         instance._event_delegate = None  # pylint: disable=protected-access
@@ -87,6 +90,7 @@ class Event(EventBase):
         else:
             def make_closure(inst, ev):  # pylint: disable=invalid-name, missing-docstring
                 return lambda: inst.event(ev)
+
             return make_closure(instance, self._event_name)
 
     def __set__(self, instance, value):
@@ -101,62 +105,6 @@ class Event(EventBase):
         raise AttributeError("Can't set attribute")
 
 
-def connected_components(edges):
-    """ Finds the connected components in a graph.
-
-    Given a graph, this function finds its connected components using the
-    `Union Find`_ algorithm.
-
-    Parameters
-    ----------
-    edges : dict
-        The list of graph edges.
-        The dictionary must have the following form::
-            {
-                ('source_node_1', 'dest_node_1'),
-                # ...
-                ('source_node_n', 'dest_node_n'),
-            }
-
-    Returns
-    -------
-    set
-        The set containing the nodes grouped by connected components.
-
-    .. _Union Find: https://en.wikipedia.org/wiki/Disjoint-set_data_structure
-    """
-    inbound = defaultdict(set)
-    nodes = set()
-    for source_nodes, dest_node in edges:
-        # Nodes set
-        nodes.update(source_nodes)
-        nodes.add(dest_node)
-        # Inbound grade
-        inbound[dest_node].update(source_nodes)
-    parent = {node: node for node in nodes}
-
-    def find(n):  # pylint: disable=invalid-name, missing-docstring
-        if parent[n] == n:
-            return n
-        else:
-            return find(parent[n])
-
-    def union(x, y):  # pylint: disable=invalid-name, missing-docstring
-        x_root = find(x)
-        y_root = find(y)
-        parent[x_root] = y_root
-
-    for u in nodes:  # pylint: disable=invalid-name
-        for v in inbound[u]:  # pylint: disable=invalid-name
-            if find(u) != find(v):
-                union(u, v)
-    components = set()
-    for node in nodes:
-        if parent[node] == node:
-            components.add(node)
-    return components
-
-
 class AutomatonMeta(type):
     """ The metaclass that must be applied on the ``automaton``-enabled classes'
     hierarchy.
@@ -169,6 +117,7 @@ class AutomatonMeta(type):
     DefinitionError
         If the states graph isn't connected (that is leads to unreachable states).
     """
+
     def __new__(mcs, class_name, class_bases, class_dict):
         cls = super().__new__(mcs, class_name, class_bases, class_dict)
         events = {}
