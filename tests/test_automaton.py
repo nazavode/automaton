@@ -327,3 +327,19 @@ def test_sink_state_loop():
     assert auto.state == "sink2"
     auto.event4()
     assert auto.state == "state_a"
+
+
+def test_star():
+    edges = ("state_a", "state_b", "state_c", "state_d", "state_e")
+
+    class Star(Automaton):
+        collapse = Event(edges, "center")
+
+    for edge in edges:
+        auto = Star(initial_state=edge)
+        assert auto.state == edge
+        auto.collapse()
+        assert auto.state == "center"
+        with pytest.raises(InvalidTransitionError):
+            auto.collapse()
+        assert auto.state == "center"
