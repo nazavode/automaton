@@ -46,6 +46,7 @@ def connected_components(edges):
     set
         The set containing the nodes grouped by connected components.
 
+
     .. _Union Find: https://en.wikipedia.org/wiki/Disjoint-set_data_structure
     """
     inbound = defaultdict(set)
