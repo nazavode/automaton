@@ -71,8 +71,8 @@ Thanks to `@simone-campagna <http://github.com/simone-campagna>`_ for the countl
 .. _connected component:
     https://en.wikipedia.org/wiki/Connected_component_(graph_theory)
 
-.. |build-status| image:: https://travis-ci.org/fmontag451/automaton.svg?branch=master
-    :target: https://travis-ci.org/fmontag451/automaton
+.. |build-status| image:: https://travis-ci.org/nazavode/automaton.svg?branch=master
+    :target: https://travis-ci.org/nazavode/automaton
     :alt: Build status
 
 .. |documentation-status| image:: https://readthedocs.org/projects/automaton/badge/?version=latest
