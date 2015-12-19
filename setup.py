@@ -69,11 +69,11 @@ if __name__ == "__main__":
         requires=[],
         description="Minimal finite-state machines",
         author="Federico Ficarelli",
-        author_email="toroidh@gmail.com",
+        author_email="federico.ficarelli@gmail.com",
         install_requires=read_requirements('install'),
         package_data={},
         # data_files=data_files,
-        url="https://github.com/fmontag451/automaton",
+        url="https://nazavode.github.io",
         packages=packages,
         scripts=scripts,
         classifiers=[
