@@ -32,14 +32,13 @@ def connected_components(edges):
 
     Parameters
     ----------
-    edges : dict
-        The list of graph edges.
-        The dictionary must have the following form::
-            {
+    edges : iterable
+        Iterable of graph edges. Must have the following format::
+            [
                 ('source_node_1', 'dest_node_1'),
                 # ...
                 ('source_node_n', 'dest_node_n'),
-            }
+            ]
 
     Returns
     -------
