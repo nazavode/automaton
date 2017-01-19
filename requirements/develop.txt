@@ -1,0 +1,8 @@
+
+-r install.txt
+
+tox
+pytest
+pytest-cov
+pylint
+flake8

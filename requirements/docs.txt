@@ -1,3 +1,4 @@
-# Sphinx:
+--index-url https://pypi.python.org/simple/
+
 Sphinx
 sphinx_rtd_theme
