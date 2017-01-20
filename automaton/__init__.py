@@ -18,6 +18,7 @@
 Minimal finite-state machine.
 """
 
+import re
 import collections
 
 from .automaton import (
