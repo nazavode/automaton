@@ -7,7 +7,10 @@ python:
 
 install:
   - pip3 install -r requirements/install.txt -r requirements/develop.txt
-  - pip3 install .
+  # editable install (-e) is required, otherwise we're going to face this:
+  # 'Coverage.py warning: No data was collected.'
+  # https://github.com/pytest-dev/pytest-cov/issues/98
+  - pip3 install -e .
 
 script:
   - py.test --cov-config .coveragerc --cov=automaton
