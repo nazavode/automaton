@@ -6,7 +6,7 @@ python:
   - 3.6
 
 install:
-  - pip3 install -r requirements/install.txt requirements/develop.txt
+  - pip3 install -r requirements/install.txt -r requirements/develop.txt
   - pip3 install .
 
 script:
