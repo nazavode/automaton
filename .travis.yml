@@ -6,14 +6,8 @@ python:
   - 3.6
 
 install:
-  - pip3 install -r requirements/install.txt -r requirements/develop.txt
-  # editable install (-e) is required, otherwise we're going to face this:
-  # 'Coverage.py warning: No data was collected.'
-  # https://github.com/pytest-dev/pytest-cov/issues/98
-  - pip3 install -e .
+  - pip3 install tox==2.5.0
+  - pip3 install tox-travis==0.8
 
 script:
-  - py.test --cov-config .coveragerc --cov=automaton
-
-after_success:
-  - bash <(curl -s https://codecov.io/bash)
+  - tox
