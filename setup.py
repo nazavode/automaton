@@ -14,82 +14,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import glob
-import os
-import sys
-
+# Always prefer setuptools over distutils
 from setuptools import setup
+# To use a consistent encoding
+from codecs import open
+from os import path
 
-if __name__ == "__main__":
-    DIRNAME = os.path.abspath(os.path.dirname(__file__))
-    if DIRNAME:
-        os.chdir(DIRNAME)
-    try:
-        py_dirname = DIRNAME
-        sys.path.insert(0, py_dirname)
-        from automaton import VERSION
+here = path.abspath(path.dirname(__file__))
 
-        version = VERSION
-    finally:
-        del sys.path[0]
+# Get the long description from the README file
+with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
+    long_description = f.read()
 
-
-    def read_requirements(*filenames):
-        requirements = []
-        for filename in filenames:
-            fpath = os.path.join(os.getcwd(), 'requirements', filename + '.txt')
-            with open(fpath, "r") as f_in:
-                for line in f_in:
-                    requirement = line.strip()
-                    if requirement not in requirements:
-                        requirements.append(requirement)
-        return requirements
-
-
-    # search executables
-    scripts = []
-    for filepath in glob.glob('bin/*'):
-        if os.path.isfile(filepath) and os.access(filepath, os.X_OK):
-            scripts.append(filepath)
-
-    # search packages
-    root_packages = ['automaton']
-    packages = []
-    for package in root_packages:
-        package_dirname = os.path.join(DIRNAME, package)
-        for dirpath, dirnames, filenames in os.walk(package_dirname):
-            if '__init__.py' in filenames:
-                rdirpath = os.path.relpath(dirpath, DIRNAME)
-                packages.append(os.path.normpath(rdirpath).replace(os.sep, '.'))
-
-    # Final setup
-    setup(
-        name="python-automaton",
-        version=version,
-        requires=[],
-        description="Minimal finite-state machines",
-        author="Federico Ficarelli",
-        author_email="federico.ficarelli@gmail.com",
-        install_requires=read_requirements('install'),
-        package_data={},
-        # data_files=data_files,
-        url="https://nazavode.github.io",
-        packages=packages,
-        scripts=scripts,
-        classifiers=[
-            # status:
-            #   3 - Alpha
-            #   4 - Beta
-            #   5 - Production/Stable
-            'Development Status :: 4 - Beta',
-            # audience:
-            'Intended Audience :: Developers',
-            'Topic :: Software Development :: Libraries',
-            # license:
-            'License :: OSI Approved :: Apache Software License',
-            # language:
-            'Programming Language :: Python :: 3.4',
-            'Operating System :: OS Independent',
-        ],
-        keywords='automata automaton statemachine',
-    )
+setup(
+    name="python-automaton",
+    version='0.2.0',
+    description="Minimal finite-state machines",
+    long_description=long_description,
+    author="Federico Ficarelli",
+    author_email="federico.ficarelli@gmail.com",
+    url="https://github.com/nazavode/automaton",
+    packages=['automaton'],
+    install_requires=['networkx'],
+    classifiers=[
+        'Development Status :: 5 - Production/Stable',
+        'Intended Audience :: Developers',
+        'Topic :: Software Development :: Libraries',
+        'License :: OSI Approved :: Apache Software License',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Operating System :: OS Independent',
+    ],
+    keywords='automata automaton statemachine',
+)

@@ -1,32 +1,19 @@
 sudo: false
 language: python
 python:
-  - "3.4"
+  - 3.4
+  - 3.5
+  - 3.6
 
-# command to install dependencies
 install:
-  - "pip3 install pytest"
-  - "pip3 install pytest-cov"
-  - "pip3 install coveralls"
-  - "pip3 install ."
+  - pip3 install -r requirements/install.txt -r requirements/develop.txt
+  # editable install (-e) is required, otherwise we're going to face this:
+  # 'Coverage.py warning: No data was collected.'
+  # https://github.com/pytest-dev/pytest-cov/issues/98
+  - pip3 install -e .
 
-
-# command to run tests
 script:
-  - coverage run --source automaton `which py.test`
+  - py.test --cov-config .coveragerc --cov=automaton
 
 after_success:
-  - coveralls --rcfile=.coveragerc
-
-# notifications:
-notifications:
-  email:
-    recipients:
-      - toroidh@gmail.com
-    on_success: change
-    on_failure: always
-
-# branches:
-branches:
-  only:
-    - master
+  - bash <(curl -s https://codecov.io/bash)

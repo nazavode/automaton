@@ -49,7 +49,7 @@ Automaton enforces correctness in two ways:
 
 1. checking that the requested event is *valid*, that is a transition from the current state to the destination
    state exists in the state machine definition;
-#. checking whether the *state graph* representing the automaton is *connected* or not (that is it must have only 
+#. checking whether the *state graph* representing the automaton is *connected* or not (that is it must have only
    one `connected component`_).
 
 
@@ -59,10 +59,10 @@ Documentation
 You can find the full documentation at http://automaton.readthedocs.org.
 
 
-Contributors
-============
+Changes
+=======
 
-Thanks to `@simone-campagna <http://github.com/simone-campagna>`_ for the countless hints.
+**unreleased**
 
 
 .. _finite-state machine:
@@ -79,11 +79,9 @@ Thanks to `@simone-campagna <http://github.com/simone-campagna>`_ for the countl
     :target: http://automaton.readthedocs.org/en/latest/?badge=latest
     :alt: Documentation status
 
-
 .. |coverage-status| image:: https://coveralls.io/repos/nazavode/automaton/badge.svg?branch=master&service=github
   :target: https://coveralls.io/github/nazavode/automaton?branch=master
   :alt: Coverage report
-
 
 .. |license-status| image:: https://img.shields.io/badge/license-Apache2.0-blue.svg
     :target: http://opensource.org/licenses/Apache2.0

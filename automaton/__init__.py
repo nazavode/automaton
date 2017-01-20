@@ -18,6 +18,7 @@
 Minimal finite-state machine.
 """
 
+import re
 import collections
 
 from .automaton import (
@@ -34,6 +35,7 @@ from .exceptions import (
 __author__ = 'Federico Ficarelli'
 __copyright__ = 'Copyright (c) 2015 Federico Ficarelli'
 __license__ = 'Apache License Version 2.0'
+__version__ = '0.2.0'
 
 __all__ = (
     # Version
@@ -48,12 +50,10 @@ __all__ = (
     "InvalidTransitionError",
 )
 
-VersionInfo = collections.namedtuple('VersionInfo', (
-    'major',
-    'minor',
-    'patch',
-))
-
-VERSION_INFO = VersionInfo(major=0, minor=2, patch=0)
-
-VERSION = '.'.join(str(v) for v in VERSION_INFO)
+###################################################
+VERSION = __version__
+# bumpversion can only search for {current_version}
+# so we have to parse the version here.
+version_info_t = collections.namedtuple('version_info_t', 'major minor patch')
+VERSION_INFO = version_info_t(*(int(part) for part in re.match(r'(\d+)\.(\d+).(\d+)', __version__).groups()))
+###################################################
