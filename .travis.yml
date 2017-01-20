@@ -6,12 +6,11 @@ python:
   - 3.6
 
 install:
-  - pip3 install pytest
-  - pip3 install pytest-cov
-  - pip3 install codecov
+  - pip3 install -r requirements/install.txt requirements/develop.txt
+  - pip3 install .
 
 script:
-  - py.test --cov=./
+  - py.test --cov-config .coveragerc --cov=automaton
 
 after_success:
-  - codecov
+  - bash <(curl -s https://codecov.io/bash)
