@@ -79,9 +79,9 @@ Changes
     :target: http://automaton.readthedocs.org/en/latest/?badge=latest
     :alt: Documentation status
 
-.. |coverage-status| image:: https://coveralls.io/repos/nazavode/automaton/badge.svg?branch=master&service=github
-  :target: https://coveralls.io/github/nazavode/automaton?branch=master
-  :alt: Coverage report
+.. |coverage-status| image:: https://codecov.io/gh/nazavode/automaton/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/nazavode/automaton
+    :alt: Coverage report
 
 .. |license-status| image:: https://img.shields.io/badge/license-Apache2.0-blue.svg
     :target: http://opensource.org/licenses/Apache2.0
