@@ -54,6 +54,6 @@ __all__ = (
 VERSION = __version__
 # bumpversion can only search for {current_version}
 # so we have to parse the version here.
-version_info_t = collections.namedtuple('version_info_t', 'major minor patch')
+version_info_t = collections.namedtuple('version_info_t', 'major minor patch')  # pylint: disable=invalid-name
 VERSION_INFO = version_info_t(*(int(part) for part in re.match(r'(\d+)\.(\d+).(\d+)', __version__).groups()))
 ###################################################
