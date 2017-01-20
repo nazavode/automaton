@@ -33,9 +33,9 @@ setup(
     long_description=long_description,
     author="Federico Ficarelli",
     author_email="federico.ficarelli@gmail.com",
-    url="https://nazavode.github.io",
+    url="https://github.com/nazavode/automaton",
     packages=['automaton'],
-    install_requires=[],
+    install_requires=['networkx'],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',

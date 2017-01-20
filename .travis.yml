@@ -1,32 +1,17 @@
 sudo: false
 language: python
 python:
-  - "3.4"
+  - 3.4
+  - 3.5
+  - 3.6
 
-# command to install dependencies
 install:
-  - "pip3 install pytest"
-  - "pip3 install pytest-cov"
-  - "pip3 install coveralls"
-  - "pip3 install ."
+  - pip3 install pytest
+  - pip3 install pytest-cov
+  - pip3 install codecov
 
-
-# command to run tests
 script:
-  - coverage run --source automaton `which py.test`
+  - py.test --cov=./
 
 after_success:
-  - coveralls --rcfile=.coveragerc
-
-# notifications:
-notifications:
-  email:
-    recipients:
-      - toroidh@gmail.com
-    on_success: change
-    on_failure: always
-
-# branches:
-branches:
-  only:
-    - master
+  - codecov
