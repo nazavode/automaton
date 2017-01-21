@@ -7,7 +7,7 @@ A minimal Python finite-state machine.
 *Automaton requires Python version 3.4 or greater.*
 
 
-|build-status| |coverage-status| |documentation-status| |license-status|
+|build-status| |coverage-status| |documentation-status| |codeqa| |license-status|
 
 Automaton is an easy to use, easy to maintain `finite-state machine`_ package for Python 3.4 or greater.
 The goal here is to have something minimal to enforce correctness and to avoid clutter from useless features.
@@ -87,7 +87,7 @@ Changes
     :target: http://opensource.org/licenses/Apache2.0
     :alt: License
 
-
-.. image:: https://api.codacy.com/project/badge/Grade/0eb6d3a1a1b04030852e153b13f7cbc9
-   :alt: Codacy Badge
+.. |codeqa| image:: https://api.codacy.com/project/badge/Grade/0eb6d3a1a1b04030852e153b13f7cbc9
    :target: https://www.codacy.com/app/federico-ficarelli/automaton?utm_source=github.com&utm_medium=referral&utm_content=nazavode/automaton&utm_campaign=badger
+   :alt: Codacy Badge
+   
