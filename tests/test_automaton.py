@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# flake8: noqa
+
 import pytest
 
 from automaton import *
@@ -62,6 +64,7 @@ def test_initial_state():
             __default_initial_state__ = "unknown"
             event1 = Event("state_a", "state_b")
             event2 = Event("state_b", "state_c")
+
     # Initial state not defined
     class NoInit(Automaton):
         event1 = Event("state_a", "state_b")
@@ -343,3 +346,27 @@ def test_star():
         with pytest.raises(InvalidTransitionError):
             auto.collapse()
         assert auto.state == "center"
+
+
+def test_in_events():
+    edges = ("state_a", "state_b", "state_c", "state_d", "state_e")
+
+    class Star(Automaton):
+        collapse = Event(edges, "center")
+        collapse2 = Event("state_f", "center")
+
+    for state in edges:
+        assert set(Star.in_events((state, ))) == set()
+
+    assert set(Star.in_events(edges)) == set()
+
+    assert set( Star.in_events(("center", )) ) == set('collapse', 'collapse2')
+
+    with pytest.raises(KeyError):
+        Star.in_events('unknown')  # Unknown state
+
+    with pytest.raises(TypeError):
+        Star.in_events(1)  # Not iterable
+
+    with pytest.raises(TypeError):
+        Star.in_events()  # Wrong call

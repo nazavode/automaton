@@ -67,7 +67,8 @@ class Event(EventBase):
         :class:`~automaton.automaton.Automaton` subclass. """
         return self._event_name
 
-    def edges(self):
+    def edges(self, data=False):
+        # TODO: update docs with networkx-style data argument
         """ Provides all the single transition edges associated
         to this event.
 
@@ -82,7 +83,10 @@ class Event(EventBase):
             All the `(source, dest)` tuples representing the graph
             edges associated to the event.
         """
-        yield from product(self.source_states, (self.dest_state, ))
+        if data:
+            yield from product(self.source_states, (self.dest_state, ), (dict(event=self.name, )))
+        else:
+            product(self.source_states, (self.dest_state, ))
 
     def bind(self, name):
         """ Binds the :class:`~automaton.automaton.Event` instance
@@ -163,7 +167,7 @@ class AutomatonMeta(type):
             # 2. Build graph
             graph = nx.MultiDiGraph()
             graph.add_nodes_from(states)
-            graph.add_edges_from(chain.from_iterable(list(event.edges()) for event in events.values()))
+            graph.add_edges_from(chain.from_iterable(list(event.edges(data=True)) for event in events.values()))
             # 3. Check states graph consistency:
             if not nx.is_weakly_connected(graph):
                 components = list(nx.weakly_connected_component_subgraphs(graph))
@@ -309,6 +313,16 @@ class Automaton(metaclass=AutomatonMeta):
             The iterator over the events set.
         """
         yield from cls.__events__  # pylint: disable=no-member
+
+    @classmethod
+    def in_events(cls, states):
+        yield from set(
+            edge[2]['event'] for edge in cls.__graph__.in_edges(states, data=True)
+        )
+
+    @classmethod
+    def out_events(cls, states):
+        pass
 
     @classmethod
     def get_default_initial_state(cls):
