@@ -71,7 +71,7 @@ class Event(EventBase):
         """ Provides all the single transition edges associated
         to this event.
 
-        .. warning::
+        .. note::
             Since an event can have multiple source states,
             in graph terms it represents a set of state-to-state
             edges.
