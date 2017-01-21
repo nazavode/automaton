@@ -86,3 +86,8 @@ Changes
 .. |license-status| image:: https://img.shields.io/badge/license-Apache2.0-blue.svg
     :target: http://opensource.org/licenses/Apache2.0
     :alt: License
+
+
+.. image:: https://api.codacy.com/project/badge/Grade/0eb6d3a1a1b04030852e153b13f7cbc9
+   :alt: Codacy Badge
+   :target: https://www.codacy.com/app/federico-ficarelli/automaton?utm_source=github.com&utm_medium=referral&utm_content=nazavode/automaton&utm_campaign=badger
