@@ -68,7 +68,7 @@ class Event(EventBase):
         return self._event_name
 
     def edges(self, data=False):
-        # TODO: update docs with networkx-style data argument
+        # TODO update docs with networkx-style data argument
         """ Provides all the single transition edges associated
         to this event.
 
@@ -83,8 +83,9 @@ class Event(EventBase):
             All the `(source, dest)` tuples representing the graph
             edges associated to the event.
         """
+        # TODO cleanup generators
         if data:
-            yield from product(self.source_states, (self.dest_state, ), (dict(event=self.name, )))
+            yield from product(self.source_states, (self.dest_state, ), (dict(event=self.name), ))
         else:
             yield from product(self.source_states, (self.dest_state, ))
 
@@ -110,7 +111,7 @@ class Event(EventBase):
             return self
         else:
             def make_closure(inst, ev):  # pylint: disable=invalid-name, missing-docstring
-                return lambda: inst.event(ev)  # TODO: cache closures in weakdict
+                return lambda: inst.event(ev)  # TODO cache closures in weakdict
 
             return make_closure(instance, self._event_name)
 

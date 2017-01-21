@@ -360,10 +360,10 @@ def test_in_events():
 
     assert set(Star.in_events(edges)) == set()
 
-    assert set( Star.in_events(("center", )) ) == set('collapse', 'collapse2')
+    assert set(Star.in_events(("center", ))) == {'collapse', 'collapse2'}
 
     with pytest.raises(KeyError):
-        Star.in_events('unknown')  # Unknown state
+        Star.in_events(('unknown', ))  # Unknown state
 
     with pytest.raises(TypeError):
         Star.in_events(1)  # Not iterable
