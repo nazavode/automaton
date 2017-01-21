@@ -86,7 +86,7 @@ class Event(EventBase):
         if data:
             yield from product(self.source_states, (self.dest_state, ), (dict(event=self.name, )))
         else:
-            product(self.source_states, (self.dest_state, ))
+            yield from product(self.source_states, (self.dest_state, ))
 
     def bind(self, name):
         """ Binds the :class:`~automaton.automaton.Event` instance
