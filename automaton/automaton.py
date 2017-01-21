@@ -17,11 +17,11 @@
 A minimal Python finite-state machine implementation.
 """
 
+from itertools import chain, product
 from collections import namedtuple, Iterable
 
-from .graph import (
-    connected_components,
-)
+import networkx as nx
+
 from .exceptions import (
     DefinitionError,
     InvalidTransitionError,
@@ -67,6 +67,23 @@ class Event(EventBase):
         :class:`~automaton.automaton.Automaton` subclass. """
         return self._event_name
 
+    def edges(self):
+        """ Provides all the single transition edges associated
+        to this event.
+
+        .. warning::
+            Since an event can have multiple source states,
+            in graph terms it represents a set of state-to-state
+            edges.
+
+        Yields
+        ------
+        (any, any)
+            All the `(source, dest)` tuples representing the graph
+            edges associated to the event.
+        """
+        yield from product(self.source_states, (self.dest_state, ))
+
     def bind(self, name):
         """ Binds the :class:`~automaton.automaton.Event` instance
         to a particular event name.
@@ -89,7 +106,7 @@ class Event(EventBase):
             return self
         else:
             def make_closure(inst, ev):  # pylint: disable=invalid-name, missing-docstring
-                return lambda: inst.event(ev)
+                return lambda: inst.event(ev)  # TODO: cache closures in weakdict
 
             return make_closure(instance, self._event_name)
 
@@ -143,11 +160,19 @@ class AutomatonMeta(type):
                 for state in cls.__default_accepting_states__:
                     if state not in cls.__states__:
                         raise DefinitionError("Default accepting state '{}' unknown.".format(state))
-            # 2. Check states graph consistency:
-            components = connected_components(events.values())
-            if len(components) != 1:
-                raise DefinitionError("The state graph contains {} connected components: "
-                                      "it must be connected.".format(len(components)))
+            # 2. Build graph
+            graph = nx.MultiDiGraph()
+            graph.add_nodes_from(states)
+            graph.add_edges_from(chain.from_iterable(list(event.edges()) for event in events.values()))
+            # 3. Check states graph consistency:
+            if not nx.is_weakly_connected(graph):
+                components = list(nx.weakly_connected_component_subgraphs(graph))
+                raise DefinitionError(
+                    "The state graph contains {} connected components: {}".format(
+                        len(components), ", ".join("{}".format(c.nodes()) for c in components))
+                )
+            # 4. Save
+            cls.__graph__ = graph
         return cls
 
 
