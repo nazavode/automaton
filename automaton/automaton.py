@@ -23,21 +23,35 @@ from collections import namedtuple, Iterable
 
 import networkx as nx
 
-from .exceptions import (
-    DefinitionError,
-    InvalidTransitionError,
-)
 
 __all__ = (
     "Event",
     "Automaton",
+    "AutomatonError",
+    "DefinitionError",
+    "InvalidTransitionError",
 )
+
+
+class AutomatonError(Exception):
+    """ Exception representing a generic error occurred in the automaton. """
+    pass
+
+
+class DefinitionError(AutomatonError):
+    """ Exception representing an error occurred during the automaton definition. """
+    pass
+
+
+class InvalidTransitionError(AutomatonError):
+    """ Exception representing an invalid transition. """
+    pass
 
 
 EventBase = namedtuple("Event", ("source_states", "dest_state"))
 
 
-def unique_everseen(iterable, key=None):
+def unique_everseen(iterable, key=None):  # pragma: no cover
     """List unique elements, preserving order. Remember all elements ever seen.
 
         >>> list(unique_everseen('AAAABBBCCDAABBB'))
@@ -47,7 +61,6 @@ def unique_everseen(iterable, key=None):
 
     .. note::
         Recipe taken from: https://docs.python.org/3.6/library/itertools.html
-
     """
     seen = set()
     seen_add = seen.add
