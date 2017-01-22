@@ -76,8 +76,8 @@ Changes
     :alt: Build status
 
 .. |documentation-status| image:: https://readthedocs.org/projects/automaton/badge/?version=latest
-    :target: http://automaton.readthedocs.org/en/latest/?badge=latest
-    :alt: Documentation status
+    :target: http://automaton.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
 
 .. |coverage-status| image:: https://codecov.io/gh/nazavode/automaton/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/nazavode/automaton
