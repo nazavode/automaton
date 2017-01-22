@@ -17,7 +17,7 @@
 A minimal Python finite-state machine implementation.
 """
 
-from itertools import chain, product
+from itertools import chain, product, filterfalse
 from collections import namedtuple, Iterable
 
 import networkx as nx
@@ -34,6 +34,32 @@ __all__ = (
 
 
 EventBase = namedtuple("Event", ("source_states", "dest_state"))
+
+
+def unique_everseen(iterable, key=None):
+    """List unique elements, preserving order. Remember all elements ever seen.
+
+        >>> list(unique_everseen('AAAABBBCCDAABBB'))
+        ['A', 'B', 'C', 'D']
+        >>> unique_everseen('ABBCcAD', str.lower)
+        ['A', 'B', 'C', 'D']
+
+    .. note::
+        Recipe taken from: https://docs.python.org/3.6/library/itertools.html
+
+    """
+    seen = set()
+    seen_add = seen.add
+    if key is None:
+        for element in filterfalse(seen.__contains__, iterable):
+            seen_add(element)
+            yield element
+    else:
+        for element in iterable:
+            k = key(element)
+            if k not in seen:
+                seen_add(k)
+                yield element
 
 
 class Event(EventBase):
@@ -294,6 +320,17 @@ class Automaton(metaclass=AutomatonMeta):
         self._state = transition.dest_state
 
     @classmethod
+    def _get_cut(cls, *states, inbound=True):
+        unknown = set(states) - cls.__states__
+        if unknown:
+            raise KeyError("Unknown states: {}".format(unknown))
+        edges = cls.__graph__.in_edges(states, data=True) if inbound \
+            else cls.__graph__.out_edges(states, data=True)
+        yield from unique_everseen(
+            edge[2]['event'] for edge in edges
+        )
+
+    @classmethod
     def states(cls):
         """ Gives the automaton state set.
 
@@ -316,14 +353,12 @@ class Automaton(metaclass=AutomatonMeta):
         yield from cls.__events__  # pylint: disable=no-member
 
     @classmethod
-    def in_events(cls, states):
-        yield from set(
-            edge[2]['event'] for edge in cls.__graph__.in_edges(states, data=True)
-        )
+    def in_events(cls, *states):
+        yield from cls._get_cut(*states, inbound=True)
 
     @classmethod
-    def out_events(cls, states):
-        pass
+    def out_events(cls, *states):
+        yield from cls._get_cut(*states, inbound=False)
 
     @classmethod
     def get_default_initial_state(cls):
