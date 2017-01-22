@@ -16,23 +16,6 @@ automaton.automaton module
     :undoc-members:
     :show-inheritance:
 
-automaton.graph module
-----------------------
-
-.. automodule:: automaton.graph
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-automaton.exceptions module
----------------------------
-
-.. automodule:: automaton.exceptions
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
 Module contents
 ---------------
 
