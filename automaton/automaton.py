@@ -17,23 +17,63 @@
 A minimal Python finite-state machine implementation.
 """
 
+from weakref import WeakKeyDictionary
+from itertools import chain, product, filterfalse
 from collections import namedtuple, Iterable
 
-from .graph import (
-    connected_components,
-)
-from .exceptions import (
-    DefinitionError,
-    InvalidTransitionError,
-)
+import networkx as nx
+
 
 __all__ = (
     "Event",
     "Automaton",
+    "AutomatonError",
+    "DefinitionError",
+    "InvalidTransitionError",
 )
 
 
+class AutomatonError(Exception):
+    """ Exception representing a generic error occurred in the automaton. """
+    pass
+
+
+class DefinitionError(AutomatonError):
+    """ Exception representing an error occurred during the automaton definition. """
+    pass
+
+
+class InvalidTransitionError(AutomatonError):
+    """ Exception representing an invalid transition. """
+    pass
+
+
 EventBase = namedtuple("Event", ("source_states", "dest_state"))
+
+
+def unique_everseen(iterable, key=None):  # pragma: no cover
+    """List unique elements, preserving order. Remember all elements ever seen.
+
+        >>> list(unique_everseen('AAAABBBCCDAABBB'))
+        ['A', 'B', 'C', 'D']
+        >>> unique_everseen('ABBCcAD', str.lower)
+        ['A', 'B', 'C', 'D']
+
+    .. note::
+        Recipe taken from: https://docs.python.org/3.6/library/itertools.html
+    """
+    seen = set()
+    seen_add = seen.add
+    if key is None:
+        for element in filterfalse(seen.__contains__, iterable):
+            seen_add(element)
+            yield element
+    else:
+        for element in iterable:
+            k = key(element)
+            if k not in seen:
+                seen_add(k)
+                yield element
 
 
 class Event(EventBase):
@@ -67,6 +107,35 @@ class Event(EventBase):
         :class:`~automaton.automaton.Automaton` subclass. """
         return self._event_name
 
+    def edges(self, data=False):
+        """ Provides all the single transition edges associated
+        to this event.
+
+        .. note::
+            Since an event can have multiple source states,
+            in graph terms it represents a set of state-to-state
+            edges.
+
+        Parameters
+        ----------
+        data : bool, optional
+            If set, data associated to the corresponding edge
+            will be added to the edge tuple. Defaults to `False`.
+
+        Yields
+        ------
+        (any, any) or (any, any, dict)
+            All the `(source, dest)` tuples representing the graph
+            edges associated to the event. If `data` parameter is set,
+            each tuple will be appended with the `dict` containing
+            edge data (by default the `'event'` key containing the
+            event name).
+        """
+        components = [self.source_states, (self.dest_state, )]
+        if data:
+            components.append((dict(event=self.name), ))
+        yield from product(*components)
+
     def bind(self, name):
         """ Binds the :class:`~automaton.automaton.Event` instance
         to a particular event name.
@@ -88,10 +157,12 @@ class Event(EventBase):
         if instance is None:
             return self
         else:
-            def make_closure(inst, ev):  # pylint: disable=invalid-name, missing-docstring
-                return lambda: inst.event(ev)
-
-            return make_closure(instance, self._event_name)
+            if not hasattr(self, '__bound_instances'):
+                # pylint: disable=attribute-defined-outside-init
+                self.__bound_instances = WeakKeyDictionary()
+            if instance not in self.__bound_instances:
+                self.__bound_instances[instance] = lambda: instance.event(self._event_name)
+            return self.__bound_instances[instance]
 
     def __set__(self, instance, value):
         """ Enables the descriptor semantics on
@@ -143,11 +214,19 @@ class AutomatonMeta(type):
                 for state in cls.__default_accepting_states__:
                     if state not in cls.__states__:
                         raise DefinitionError("Default accepting state '{}' unknown.".format(state))
-            # 2. Check states graph consistency:
-            components = connected_components(events.values())
-            if len(components) != 1:
-                raise DefinitionError("The state graph contains {} connected components: "
-                                      "it must be connected.".format(len(components)))
+            # 2. Build graph
+            graph = nx.MultiDiGraph()
+            graph.add_nodes_from(states)
+            graph.add_edges_from(chain.from_iterable(list(event.edges(data=True)) for event in events.values()))
+            # 3. Check states graph consistency:
+            if not nx.is_weakly_connected(graph):
+                components = list(nx.weakly_connected_component_subgraphs(graph))
+                raise DefinitionError(
+                    "The state graph contains {} connected components: {}".format(
+                        len(components), ", ".join("{}".format(c.nodes()) for c in components))
+                )
+            # 4. Save
+            cls.__graph__ = graph
         return cls
 
 
@@ -264,12 +343,39 @@ class Automaton(metaclass=AutomatonMeta):
         self._state = transition.dest_state
 
     @classmethod
+    def _get_cut(cls, *states, inbound=True):
+        """ Retrieves all the events that form a cut for the
+        all the specified subgraphs.
+
+        Parameters
+        ----------
+        states : tuple(any)
+            The states subset.
+        inbound : bool
+            If set, the inbound events will be returned,
+            outbound otherwise. Defaults to `True`.
+
+        Yields
+        ------
+        any
+            All the inbound or outbound events.
+        """
+        unknown = set(states) - cls.__states__  # pylint: disable=no-member
+        if unknown:
+            raise KeyError("Unknown states: {}".format(unknown))
+        edges_getter = \
+            cls.__graph__.in_edges if inbound else cls.__graph__.out_edges  # pylint: disable=no-member
+        yield from unique_everseen(
+            edge[2]['event'] for edge in edges_getter(states, data=True)
+        )
+
+    @classmethod
     def states(cls):
         """ Gives the automaton state set.
 
-        Returns
-        -------
-        iter
+        Yields
+        ------
+        any
             The iterator over the state set.
         """
         yield from cls.__states__  # pylint: disable=no-member
@@ -278,12 +384,46 @@ class Automaton(metaclass=AutomatonMeta):
     def events(cls):
         """ Gives the automaton events set.
 
-        Returns
-        -------
-        iter
+        Yields
+        ------
+        any
             The iterator over the events set.
         """
         yield from cls.__events__  # pylint: disable=no-member
+
+    @classmethod
+    def in_events(cls, *states):
+        """ Retrieves all the inbound events entering the
+        specified states with no duplicates.
+
+        Parameters
+        ----------
+        states : tuple(any)
+            The states subset.
+
+        Yields
+        ------
+        any
+            The events entering the specified states.
+        """
+        yield from cls._get_cut(*states, inbound=True)
+
+    @classmethod
+    def out_events(cls, *states):
+        """ Retrieves all the outbound events leaving the
+        specified states with no duplicates.
+
+        Parameters
+        ----------
+        states : tuple(any)
+            The states subset.
+
+        Yields
+        ------
+        any
+            The events that exit the specified states.
+        """
+        yield from cls._get_cut(*states, inbound=False)
 
     @classmethod
     def get_default_initial_state(cls):

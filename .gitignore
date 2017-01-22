@@ -60,4 +60,4 @@ target/
 .idea/
 
 # Development virtualenv
-.env/
+.venv/

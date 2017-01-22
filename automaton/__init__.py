@@ -24,13 +24,11 @@ import collections
 from .automaton import (
     Event,
     Automaton,
-)
-
-from .exceptions import (
     AutomatonError,
     DefinitionError,
     InvalidTransitionError,
 )
+
 
 __author__ = 'Federico Ficarelli'
 __copyright__ = 'Copyright (c) 2015 Federico Ficarelli'
