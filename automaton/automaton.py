@@ -321,13 +321,13 @@ class Automaton(metaclass=AutomatonMeta):
 
     @classmethod
     def _get_cut(cls, *states, inbound=True):
-        unknown = set(states) - cls.__states__
+        unknown = set(states) - cls.__states__  # pylint: disable=no-member
         if unknown:
             raise KeyError("Unknown states: {}".format(unknown))
-        edges = cls.__graph__.in_edges(states, data=True) if inbound \
-            else cls.__graph__.out_edges(states, data=True)
+        edges_getter = \
+            cls.__graph__.in_edges if inbound else cls.__graph__.out_edges  # pylint: disable=no-member
         yield from unique_everseen(
-            edge[2]['event'] for edge in edges
+            edge[2]['event'] for edge in edges_getter(states, data=True)
         )
 
     @classmethod
