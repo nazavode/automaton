@@ -33,6 +33,13 @@ def traffic_light():
     return TrafficLight
 
 
+def test_str(traffic_light):
+    auto = traffic_light()
+    assert str(auto) == '<TrafficLight@red>'
+    auto.go()
+    assert str(auto) == '<TrafficLight@green>'
+
+
 def test_definition():
     class Simple(Automaton):
         __default_initial_state__ = 'state_a'

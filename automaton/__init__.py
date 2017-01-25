@@ -27,6 +27,8 @@ from .automaton import (
     AutomatonError,
     DefinitionError,
     InvalidTransitionError,
+    tabulate,
+    plantuml,
 )
 
 
@@ -46,6 +48,8 @@ __all__ = (
     "AutomatonError",
     "DefinitionError",
     "InvalidTransitionError",
+    "tabulate",
+    "plantuml",
 )
 
 ###################################################

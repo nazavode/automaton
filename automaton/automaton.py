@@ -21,6 +21,7 @@ from weakref import WeakKeyDictionary
 from itertools import chain, product, filterfalse
 from collections import namedtuple, Iterable
 
+import tabulate as tabulator
 import networkx as nx
 
 
@@ -226,7 +227,7 @@ class AutomatonMeta(type):
                         len(components), ", ".join("{}".format(c.nodes()) for c in components))
                 )
             # 4. Save
-            cls.__graph__ = graph
+            cls.__graph__ = nx.freeze(graph)
         return cls
 
 
@@ -355,6 +356,11 @@ class Automaton(metaclass=AutomatonMeta):
             If set, the inbound events will be returned,
             outbound otherwise. Defaults to `True`.
 
+        Raises
+        ------
+        KeyError
+            When an unknown state is found while iterating.
+
         Yields
         ------
         any
@@ -401,6 +407,11 @@ class Automaton(metaclass=AutomatonMeta):
         states : tuple(any)
             The states subset.
 
+        Raises
+        ------
+        KeyError
+            When an unknown state is found while iterating.
+
         Yields
         ------
         any
@@ -412,6 +423,11 @@ class Automaton(metaclass=AutomatonMeta):
     def out_events(cls, *states):
         """ Retrieves all the outbound events leaving the
         specified states with no duplicates.
+
+        Raises
+        ------
+        KeyError
+            When an unknown state is found while iterating.
 
         Parameters
         ----------
@@ -435,3 +451,59 @@ class Automaton(metaclass=AutomatonMeta):
             The automaton default initial state.
         """
         return cls.__default_initial_state__
+
+    def __str__(self):
+        return '<{}@{}>'.format(self.__class__.__name__, self.state)
+
+
+###############################################################################
+# Rendering stuff, everything beyond this point is mere IO and formatting
+# for humans.
+
+def plantuml(graph):
+    """
+    @startuml
+        [*] --> NEW : creation
+        NEW --> PENDING : frontend_ack
+        PENDING --> IDLE : allocation
+        DONE --> [*]
+        FAILED --> [*]
+        CANCELLED --> [*]
+    @enduml
+    """
+    source_nodes = {node for node in graph.nodes() if len(graph.in_edges(node)) == 0}
+    sink_nodes = {node for node in graph.nodes() if len(graph.out_edges(node)) == 0}
+    sources = [('[*]', node) for node in source_nodes]
+    sinks = [(node, '[*]') for node in sink_nodes]
+    table = to_table(graph=graph)
+    return """
+@startuml
+{}
+{}
+{}
+@enduml
+""".format('\n'.join(['    {} --> {}'.format(*row) for row in sources]),
+           '\n'.join(['    {} --> {} : {}'.format(*row) for row in table]),
+           '\n'.join(['    {} --> {}'.format(*row) for row in sinks]))
+
+
+def to_table(graph, source=None, traversal=None):
+    source = source or min(graph.nodes(), key=lambda n: len(graph.in_edges(n)))
+    if traversal:
+        traversal = lambda: traversal(graph, source=source)
+    else:
+        traversal = lambda: nx.bfs_edges(graph, source=source)
+    # Retrieve event names since networkx traversal
+    # functions lack data retrieval
+    events = nx.get_edge_attributes(graph, 'event')
+    # Build raw data table to be rendered
+    return [(source, dest, events[source, dest]) for source, dest in traversal()]
+
+
+def tabulate(graph, header=None, tablefmt=None, source=None, traversal=None):
+    header = header or ['Source', 'Dest', 'Event']
+    table = to_table(graph=graph, source=None, traversal=traversal)
+    if tablefmt == 'plantuml':
+        return format_plantuml(table)
+    else:
+        return tabulator.tabulate(table, header, tablefmt=tablefmt)
