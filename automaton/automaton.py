@@ -502,8 +502,5 @@ def to_table(graph, source=None, traversal=None):
 
 def tabulate(graph, header=None, tablefmt=None, source=None, traversal=None):
     header = header or ['Source', 'Dest', 'Event']
-    table = to_table(graph=graph, source=None, traversal=traversal)
-    if tablefmt == 'plantuml':
-        return format_plantuml(table)
-    else:
-        return tabulator.tabulate(table, header, tablefmt=tablefmt)
+    table = to_table(graph=graph, source=source, traversal=traversal)
+    return tabulator.tabulate(table, header, tablefmt=tablefmt)
