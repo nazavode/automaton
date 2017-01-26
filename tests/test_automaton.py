@@ -403,3 +403,39 @@ def test_out_events():
 
     with pytest.raises(KeyError):
         set(Star.out_events('unknown1', 'unknown2', 'center'))  # Unknown state
+
+
+def test_event_edges():
+    event = Event('a', 'b')
+    event.bind('testevent')
+    assert list(event.edges()) == [('a', 'b')]
+    assert list(event.edges(data=True)) == [('a', 'b', {'event': 'testevent'})]
+    #
+    event = Event(('a', 'b', 'c', 'd'), 'x')
+    event.bind('testevent')
+    assert list(event.edges()) == [('a', 'x'), ('b', 'x'), ('c', 'x'), ('d', 'x')]
+    assert list(event.edges(data=True)) == [('a', 'x', {'event': 'testevent'}),
+        ('b', 'x', {'event': 'testevent'}), ('c', 'x', {'event': 'testevent'}),
+        ('d', 'x', {'event': 'testevent'})]
+    #
+    class Sink(Automaton):
+        event1 = Event('state_a', 'state_b')
+        event2 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink1')
+        event3 = Event(('state_a', 'state_b', 'state_c', 'state_d', 'sink1'), 'sink2')
+        event4 = Event('sink2', 'state_a')
+    assert list(Sink.event2.edges()) == \
+        [('state_a', 'sink1'), ('state_b', 'sink1'), ('state_c', 'sink1'), ('state_d', 'sink1')]
+
+
+
+@pytest.mark.parametrize('header', [[1, 2, 3], ['a', 'b', 'c']])
+@pytest.mark.parametrize('tablefmt', ['rst', 'pipe'])
+def test_format(header, tablefmt):
+
+    class Sink(Automaton):
+        event1 = Event('state_a', 'state_b')
+        event2 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink1')
+        event3 = Event(('state_a', 'state_b', 'state_c', 'state_d', 'sink1'), 'sink2')
+        event4 = Event('sink2', 'state_a')
+
+    assert tabulate(Sink.__graph__, header=header, tablefmt=tablefmt)

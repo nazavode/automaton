@@ -456,9 +456,8 @@ class Automaton(metaclass=AutomatonMeta):
         return '<{}@{}>'.format(self.__class__.__name__, self.state)
 
 
-###############################################################################
-# Rendering stuff, everything beyond this point is mere IO and formatting
-# for humans.
+#########################################################################
+# Rendering stuff, everything beyond this point is formatting for humans.
 
 def plantuml(graph):
     """
@@ -497,7 +496,7 @@ def to_table(graph, source=None, traversal=None):
     # functions lack data retrieval
     events = nx.get_edge_attributes(graph, 'event')
     # Build raw data table to be rendered
-    return [(source, dest, events[source, dest]) for source, dest in traversal()]
+    return [(source, dest, events[source, dest, 0]) for source, dest in traversal()]
 
 
 def tabulate(graph, header=None, tablefmt=None, source=None, traversal=None):
