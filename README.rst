@@ -61,8 +61,16 @@ You can find the full documentation at http://automaton.readthedocs.org.
 
 Changes
 =======
-
-**unreleased**
+[1.1.0] - 2017-01-28
+--------------------
+Added
+`````
+- Automaton representation as transition table or state-transition graph.
+[1.0.0] - 2017-01-25
+--------------------
+Added
+`````
+- Functions to retrieve incoming and outgoing events from a state or a set of states
 
 
 .. _finite-state machine:
