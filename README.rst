@@ -7,7 +7,7 @@ A minimal Python finite-state machine.
 *Automaton requires Python version 3.4 or greater.*
 
 
-|build-status| |coverage-status| |documentation-status| |license-status|
+|build-status| |coverage-status| |documentation-status| |codeqa| |pypi| |license-status|
 
 Automaton is an easy to use, easy to maintain `finite-state machine`_ package for Python 3.4 or greater.
 The goal here is to have something minimal to enforce correctness and to avoid clutter from useless features.
@@ -76,13 +76,22 @@ Changes
     :alt: Build status
 
 .. |documentation-status| image:: https://readthedocs.org/projects/automaton/badge/?version=latest
-    :target: http://automaton.readthedocs.org/en/latest/?badge=latest
-    :alt: Documentation status
+    :target: http://automaton.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
 
-.. |coverage-status| image:: https://coveralls.io/repos/nazavode/automaton/badge.svg?branch=master&service=github
-  :target: https://coveralls.io/github/nazavode/automaton?branch=master
-  :alt: Coverage report
+.. |coverage-status| image:: https://codecov.io/gh/nazavode/automaton/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/nazavode/automaton
+    :alt: Coverage report
 
 .. |license-status| image:: https://img.shields.io/badge/license-Apache2.0-blue.svg
     :target: http://opensource.org/licenses/Apache2.0
     :alt: License
+
+.. |codeqa| image:: https://api.codacy.com/project/badge/Grade/0eb6d3a1a1b04030852e153b13f7cbc9
+   :target: https://www.codacy.com/app/federico-ficarelli/automaton?utm_source=github.com&utm_medium=referral&utm_content=nazavode/automaton&utm_campaign=badger
+   :alt: Codacy Badge
+   
+.. |pypi| image:: https://badge.fury.io/py/python-automaton.svg
+    :target: https://badge.fury.io/py/python-automaton
+    :alt: PyPI
+   

@@ -57,7 +57,7 @@ def unique_everseen(iterable, key=None):  # pragma: no cover
 
         >>> list(unique_everseen('AAAABBBCCDAABBB'))
         ['A', 'B', 'C', 'D']
-        >>> unique_everseen('ABBCcAD', str.lower)
+        >>> list(unique_everseen('ABBCcAD', str.lower))
         ['A', 'B', 'C', 'D']
 
     .. note::
