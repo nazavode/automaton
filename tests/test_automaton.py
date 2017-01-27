@@ -33,6 +33,13 @@ def traffic_light():
     return TrafficLight
 
 
+def test_str(traffic_light):
+    auto = traffic_light()
+    assert str(auto) == '<TrafficLight@red>'
+    auto.go()
+    assert str(auto) == '<TrafficLight@green>'
+
+
 def test_definition():
     class Simple(Automaton):
         __default_initial_state__ = 'state_a'
@@ -396,3 +403,69 @@ def test_out_events():
 
     with pytest.raises(KeyError):
         set(Star.out_events('unknown1', 'unknown2', 'center'))  # Unknown state
+
+
+def test_event_edges():
+    event = Event('a', 'b')
+    event.bind('testevent')
+    assert list(event.edges()) == [('a', 'b')]
+    assert list(event.edges(data=True)) == [('a', 'b', {'event': 'testevent'})]
+    #
+    event = Event(('a', 'b', 'c', 'd'), 'x')
+    event.bind('testevent')
+    assert list(event.edges()) == [('a', 'x'), ('b', 'x'), ('c', 'x'), ('d', 'x')]
+    assert list(event.edges(data=True)) == [('a', 'x', {'event': 'testevent'}),
+        ('b', 'x', {'event': 'testevent'}), ('c', 'x', {'event': 'testevent'}),
+        ('d', 'x', {'event': 'testevent'})]
+    #
+    class Sink(Automaton):
+        event1 = Event('state_a', 'state_b')
+        event2 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink1')
+        event3 = Event(('state_a', 'state_b', 'state_c', 'state_d', 'sink1'), 'sink2')
+        event4 = Event('sink2', 'state_a')
+    assert list(Sink.event2.edges()) == \
+        [('state_a', 'sink1'), ('state_b', 'sink1'), ('state_c', 'sink1'), ('state_d', 'sink1')]
+
+
+@pytest.fixture(params=[None, lambda G: G.edges(data=False)])
+def traversal(request):
+    return request.param
+
+
+@pytest.mark.parametrize('header', [None, [], [1, 2, 3], ['a', 'b', 'c']])
+@pytest.mark.parametrize('tablefmt', [None, '', 'rst', 'pipe'])
+def test_tabulate(header, tablefmt, traversal):
+
+    class Sink(Automaton):
+        event1 = Event('state_a', 'state_b')
+        event2 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink1')
+        event3 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink2')
+        event4 = Event('sink2', 'state_a')
+
+    assert tabulate(Sink, header=header, tablefmt=tablefmt, traversal=traversal)
+
+
+def test_plantuml(traversal):
+
+    class Sink(Automaton):
+        event1 = Event('state_a', 'state_b')
+        event2 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink1')
+        event3 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink2')
+        event4 = Event('sink2', 'state_a')
+
+    assert plantuml(Sink, traversal=traversal)
+
+
+def test_transition_table(traversal):
+
+    class Sink(Automaton):
+        event1 = Event('state_a', 'state_b')
+        event2 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink1')
+        event3 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink2')
+        event4 = Event('sink2', 'state_a')
+
+    table = list(transition_table(Sink, traversal=traversal))
+    assert table
+    assert len(table) == 10
+    for row in table:
+        assert len(row) == 3

@@ -16,3 +16,5 @@ tox==2.5.0
 virtualenv==15.1.0
 wrapt==1.10.8
 bumpversion==0.5.3
+pytest-sugar==0.8.0
+termcolor==1.1.0

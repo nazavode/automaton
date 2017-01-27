@@ -21,6 +21,7 @@ from weakref import WeakKeyDictionary
 from itertools import chain, product, filterfalse
 from collections import namedtuple, Iterable
 
+import tabulate as tabulator
 import networkx as nx
 
 
@@ -30,6 +31,9 @@ __all__ = (
     "AutomatonError",
     "DefinitionError",
     "InvalidTransitionError",
+    "transition_table",
+    "plantuml",
+    "tabulate",
 )
 
 
@@ -226,7 +230,7 @@ class AutomatonMeta(type):
                         len(components), ", ".join("{}".format(c.nodes()) for c in components))
                 )
             # 4. Save
-            cls.__graph__ = graph
+            cls.__graph__ = nx.freeze(graph)
         return cls
 
 
@@ -355,6 +359,11 @@ class Automaton(metaclass=AutomatonMeta):
             If set, the inbound events will be returned,
             outbound otherwise. Defaults to `True`.
 
+        Raises
+        ------
+        KeyError
+            When an unknown state is found while iterating.
+
         Yields
         ------
         any
@@ -401,6 +410,11 @@ class Automaton(metaclass=AutomatonMeta):
         states : tuple(any)
             The states subset.
 
+        Raises
+        ------
+        KeyError
+            When an unknown state is found while iterating.
+
         Yields
         ------
         any
@@ -412,6 +426,11 @@ class Automaton(metaclass=AutomatonMeta):
     def out_events(cls, *states):
         """ Retrieves all the outbound events leaving the
         specified states with no duplicates.
+
+        Raises
+        ------
+        KeyError
+            When an unknown state is found while iterating.
 
         Parameters
         ----------
@@ -435,3 +454,147 @@ class Automaton(metaclass=AutomatonMeta):
             The automaton default initial state.
         """
         return cls.__default_initial_state__
+
+    def __str__(self):
+        return '<{}@{}>'.format(self.__class__.__name__, self.state)
+
+
+#########################################################################
+# Rendering stuff, everything beyond this point is formatting for humans.
+
+def plantuml(automaton, traversal=None):
+    """ Render an automaton's state-transition graph as a
+    `PlantUML state diagram <http://plantuml.com/state-diagram>`_.
+
+    A simple example will be formatted as follows:
+
+        >>> class TrafficLight(Automaton):
+        ...     go = Event('red', 'green')
+        ...     slowdown = Event('green', 'yellow')
+        ...     stop = Event('yellow', 'red')
+        >>> print( plantuml(TrafficLight) )  # doctest: +SKIP
+
+        @startuml
+            green --> yellow : slowdown
+            yellow --> red : stop
+            red --> green : go
+        @enduml
+
+    Parameters
+    ----------
+    automaton : `~automaton.Automaton`
+        The automaton to be rendered. It can be both
+        a class and an instance.
+    traversal : callable(graph), optional
+        An optional callable used to sort the events.
+        It has the same meaning as the ``traversal``
+        parameter of `automaton.transition_table`.
+
+    Returns
+    -------
+    str
+        Returns the formatted state graph.
+    """
+    graph = automaton.__graph__
+    source_nodes = filter(lambda n: not graph.in_edges(n), graph.nodes())
+    sink_nodes = filter(lambda n: not graph.out_edges(n), graph.nodes())
+    sources = [('[*]', node) for node in source_nodes]
+    sinks = [(node, '[*]') for node in sink_nodes]
+    table = transition_table(automaton, traversal=traversal)
+    return """@startuml
+{}
+{}
+{}
+@enduml""".format('\n'.join(['    {} --> {}'.format(*row) for row in sources]),
+                  '\n'.join(['    {} --> {} : {}'.format(*row) for row in table]),
+                  '\n'.join(['    {} --> {}'.format(*row) for row in sinks]))
+
+
+def transition_table(automaton, traversal=None):
+    """ Build the adjacency table of the given graph.
+
+    Parameters
+    ----------
+    automaton : `~automaton.Automaton`
+        The automaton to be rendered. It can be both
+        a class and an instance.
+    traversal : callable(graph), optional
+        An optional callable used to yield the
+        edges of the graph representation of the
+        automaton. It must accept a `networkx.MultiDiGraph`
+        as the first positional argument
+        and yield one edge at a time as a tuple in the
+        form ``(source_state, destination_state)``. The default
+        traversal sorts the states in ascending order by
+        inbound grade (number of incoming events).
+
+    Yields
+    ------
+    (source, dest, event)
+        Yields one row at a time as a tuple containing
+        the source and destination node of the edge and
+        the name of the event associated with the edge.
+    """
+    graph = automaton.__graph__
+    if not traversal:
+        traversal = lambda G: sorted(G.edges(), key=lambda e: len(G.in_edges(e[0])))
+    # Retrieve event names since networkx traversal
+    # functions lack data retrieval
+    events = nx.get_edge_attributes(graph, 'event')  # -> (source, dest, key==0): event
+    # Build raw data table to be rendered
+    for source, dest in traversal(graph):
+        yield (source, dest, events[source, dest, 0])
+
+
+def tabulate(automaton, header=None, tablefmt=None, traversal=None):
+    """ Render an automaton's transition table as in
+    text format.
+
+    The transition table has three columns: source node,
+    destination node and the name of the event.
+
+    A simple example will be formatted as follows:
+
+        >>> class TrafficLight(Automaton):
+        ...     go = Event('red', 'green')
+        ...     slowdown = Event('green', 'yellow')
+        ...     stop = Event('yellow', 'red')
+        >>> tabulate(TrafficLight) # doctest: +SKIP
+
+        ========  ======  ========
+        Source    Dest    Event
+        ========  ======  ========
+        green     yellow  slowdown
+        yellow    red     stop
+        red       green   go
+        ========  ======  ========
+
+    Parameters
+    ----------
+    automaton : `~automaton.Automaton`
+        The automaton to be rendered. It can be both
+        a class and an instance.
+    header : list[str, str, str]
+        An optional list of fields to be used as table
+        headers. Defaults to a predefined header.
+    tablefmt str, optional
+        Specifies the output format for the table.
+        All formats supported by
+        `tabulate <https://pypi.python.org/pypi/tabulate>`_
+        package are supported (e.g.: ``rst`` for
+        reStructuredText, ``pipe`` for Markdown).
+        Defaults to ``rst``.
+    traversal : callable(graph), optional
+        An optional callable used to sort the events.
+        It has the same meaning as the ``traversal``
+        parameter of `automaton.transition_table`.
+
+    Returns
+    -------
+    str
+        Returns the formatted transition table.
+    """
+    header = header or ['Source', 'Dest', 'Event']
+    tablefmt = tablefmt or 'rst'
+    table = transition_table(automaton=automaton, traversal=traversal)
+    return tabulator.tabulate(table, header, tablefmt=tablefmt)

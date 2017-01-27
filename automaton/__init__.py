@@ -21,12 +21,15 @@ Minimal finite-state machine.
 import re
 import collections
 
-from .automaton import (
+from .automaton import (  # noqa: F401
     Event,
     Automaton,
     AutomatonError,
     DefinitionError,
     InvalidTransitionError,
+    tabulate,
+    plantuml,
+    transition_table,
 )
 
 
@@ -35,18 +38,6 @@ __copyright__ = 'Copyright (c) 2015 Federico Ficarelli'
 __license__ = 'Apache License Version 2.0'
 __version__ = '1.0.0'
 
-__all__ = (
-    # Version
-    "VERSION_INFO",
-    "VERSION",
-    # Automaton API
-    "Event",
-    "Automaton",
-    # Exceptions
-    "AutomatonError",
-    "DefinitionError",
-    "InvalidTransitionError",
-)
 
 ###################################################
 VERSION = __version__
