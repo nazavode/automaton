@@ -36,7 +36,7 @@ from .automaton import (  # noqa: F401
 __author__ = 'Federico Ficarelli'
 __copyright__ = 'Copyright (c) 2015 Federico Ficarelli'
 __license__ = 'Apache License Version 2.0'
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 
 
 ###################################################
