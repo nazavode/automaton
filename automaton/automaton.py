@@ -31,6 +31,9 @@ __all__ = (
     "AutomatonError",
     "DefinitionError",
     "InvalidTransitionError",
+    "transition_table",
+    "plantuml",
+    "tabulate",
 )
 
 
@@ -459,7 +462,7 @@ class Automaton(metaclass=AutomatonMeta):
 #########################################################################
 # Rendering stuff, everything beyond this point is formatting for humans.
 
-def plantuml(automaton):
+def plantuml(automaton, traversal=None):
     """ Render an automaton's state-transition graph as a
     `PlantUML state diagram <http://plantuml.com/state-diagram>`_.
 
@@ -482,6 +485,10 @@ def plantuml(automaton):
     automaton : `~automaton.Automaton`
         The automaton to be rendered. It can be both
         a class and an instance.
+    traversal : callable(graph), optional
+        An optional callable used to sort the events.
+        It has the same meaning as the ``traversal``
+        parameter of `automaton.transition_table`.
 
     Returns
     -------
@@ -493,7 +500,7 @@ def plantuml(automaton):
     sink_nodes = filter(lambda n: not graph.out_edges(n), graph.nodes())
     sources = [('[*]', node) for node in source_nodes]
     sinks = [(node, '[*]') for node in sink_nodes]
-    table = to_table(graph=graph)
+    table = transition_table(automaton, traversal=traversal)
     return """@startuml
 {}
 {}
@@ -503,21 +510,23 @@ def plantuml(automaton):
                   '\n'.join(['    {} --> {}'.format(*row) for row in sinks]))
 
 
-def to_table(graph, traversal=None):
+def transition_table(automaton, traversal=None):
     """ Build the adjacency table of the given graph.
 
     Parameters
     ----------
-    graph : `~networkx.MultiDiGraph`
-        The directed graph.
+    automaton : `~automaton.Automaton`
+        The automaton to be rendered. It can be both
+        a class and an instance.
     traversal : callable(graph), optional
         An optional callable used to yield the
-        edges of the graph. It must accept the graph
-        itself as the first positional argument
+        edges of the graph representation of the
+        automaton. It must accept a `networkx.MultiDiGraph`
+        as the first positional argument
         and yield one edge at a time as a tuple in the
-        form ``(source_node, destination_node)``. The default
-        traversal sorts the nodes in ascending order by
-        inbound grade.
+        form ``(source_state, destination_state)``. The default
+        traversal sorts the states in ascending order by
+        inbound grade (number of incoming events).
 
     Yields
     ------
@@ -526,6 +535,7 @@ def to_table(graph, traversal=None):
         the source and destination node of the edge and
         the name of the event associated with the edge.
     """
+    graph = automaton.__graph__
     if traversal:
         traversal = lambda: traversal(graph)
     else:
@@ -579,15 +589,14 @@ def tabulate(automaton, header=None, tablefmt=None, traversal=None):
     traversal : callable(graph), optional
         An optional callable used to sort the events.
         It has the same meaning as the ``traversal``
-        parameter of `automaton.to_table`.
+        parameter of `automaton.transition_table`.
 
     Returns
     -------
     str
         Returns the formatted transition table.
     """
-    graph = automaton.__graph__
     header = header or ['Source', 'Dest', 'Event']
     tablefmt = tablefmt or 'rst'
-    table = to_table(graph=graph, traversal=traversal)
+    table = transition_table(automaton=automaton, traversal=traversal)
     return tabulator.tabulate(table, header, tablefmt=tablefmt)

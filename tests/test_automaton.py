@@ -427,10 +427,9 @@ def test_event_edges():
         [('state_a', 'sink1'), ('state_b', 'sink1'), ('state_c', 'sink1'), ('state_d', 'sink1')]
 
 
-
-@pytest.mark.parametrize('header', [[1, 2, 3], ['a', 'b', 'c']])
-@pytest.mark.parametrize('tablefmt', ['rst', 'pipe'])
-def test_format(header, tablefmt):
+@pytest.mark.parametrize('header', [None, [], [1, 2, 3], ['a', 'b', 'c']])
+@pytest.mark.parametrize('tablefmt', [None, '', 'rst', 'pipe'])
+def test_tabulate(header, tablefmt):
 
     class Sink(Automaton):
         event1 = Event('state_a', 'state_b')
@@ -439,4 +438,29 @@ def test_format(header, tablefmt):
         event4 = Event('sink2', 'state_a')
 
     assert tabulate(Sink, header=header, tablefmt=tablefmt)
-    print(plantuml(Sink))
+
+
+def test_plantuml():
+
+    class Sink(Automaton):
+        event1 = Event('state_a', 'state_b')
+        event2 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink1')
+        event3 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink2')
+        event4 = Event('sink2', 'state_a')
+
+    assert plantuml(Sink)
+
+
+def test_transition_table():
+
+    class Sink(Automaton):
+        event1 = Event('state_a', 'state_b')
+        event2 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink1')
+        event3 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink2')
+        event4 = Event('sink2', 'state_a')
+
+    table = list(transition_table(Sink, traversal=None))
+    assert table
+    assert len(table) == 10
+    for row in table:
+        assert len(row) == 3
