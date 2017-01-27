@@ -459,47 +459,135 @@ class Automaton(metaclass=AutomatonMeta):
 #########################################################################
 # Rendering stuff, everything beyond this point is formatting for humans.
 
-def plantuml(graph):
+def plantuml(automaton):
+    """ Render an automaton's state-transition graph as a
+    `PlantUML state diagram <http://plantuml.com/state-diagram>`_.
+
+    A simple example will be formatted as follows:
+
+        >>> class TrafficLight(Automaton):
+        ...     go = Event('red', 'green')
+        ...     slowdown = Event('green', 'yellow')
+        ...     stop = Event('yellow', 'red')
+        >>> print( plantuml(TrafficLight) )  # doctest: +SKIP
+
+        @startuml
+            green --> yellow : slowdown
+            yellow --> red : stop
+            red --> green : go
+        @enduml
+
+    Parameters
+    ----------
+    automaton : `~automaton.Automaton`
+        The automaton to be rendered. It can be both
+        a class and an instance.
+
+    Returns
+    -------
+    str
+        Returns the formatted state graph.
     """
-    @startuml
-        [*] --> NEW : creation
-        NEW --> PENDING : frontend_ack
-        PENDING --> IDLE : allocation
-        DONE --> [*]
-        FAILED --> [*]
-        CANCELLED --> [*]
-    @enduml
-    """
-    source_nodes = {node for node in graph.nodes() if len(graph.in_edges(node)) == 0}
-    sink_nodes = {node for node in graph.nodes() if len(graph.out_edges(node)) == 0}
+    graph = automaton.__graph__
+    source_nodes = filter(lambda n: not graph.in_edges(n), graph.nodes())
+    sink_nodes = filter(lambda n: not graph.out_edges(n), graph.nodes())
     sources = [('[*]', node) for node in source_nodes]
     sinks = [(node, '[*]') for node in sink_nodes]
     table = to_table(graph=graph)
-    return """
-@startuml
+    return """@startuml
 {}
 {}
 {}
-@enduml
-""".format('\n'.join(['    {} --> {}'.format(*row) for row in sources]),
-           '\n'.join(['    {} --> {} : {}'.format(*row) for row in table]),
-           '\n'.join(['    {} --> {}'.format(*row) for row in sinks]))
+@enduml""".format('\n'.join(['    {} --> {}'.format(*row) for row in sources]),
+                  '\n'.join(['    {} --> {} : {}'.format(*row) for row in table]),
+                  '\n'.join(['    {} --> {}'.format(*row) for row in sinks]))
 
 
-def to_table(graph, source=None, traversal=None):
-    source = source or min(graph.nodes(), key=lambda n: len(graph.in_edges(n)))
+def to_table(graph, traversal=None):
+    """ Build the adjacency table of the given graph.
+
+    Parameters
+    ----------
+    graph : `~networkx.MultiDiGraph`
+        The directed graph.
+    traversal : callable(graph), optional
+        An optional callable used to yield the
+        edges of the graph. It must accept the graph
+        itself as the first positional argument
+        and yield one edge at a time as a tuple in the
+        form ``(source_node, destination_node)``. The default
+        traversal sorts the nodes in ascending order by
+        inbound grade.
+
+    Yields
+    ------
+    (source, dest, event)
+        Yields one row at a time as a tuple containing
+        the source and destination node of the edge and
+        the name of the event associated with the edge.
+    """
     if traversal:
-        traversal = lambda: traversal(graph, source=source)
+        traversal = lambda: traversal(graph)
     else:
-        traversal = lambda: nx.bfs_edges(graph, source=source)
+        traversal = lambda: sorted(graph.edges(), key=lambda e: len(graph.in_edges(e[0])))
     # Retrieve event names since networkx traversal
     # functions lack data retrieval
-    events = nx.get_edge_attributes(graph, 'event')
+    events = nx.get_edge_attributes(graph, 'event')  # -> (source, dest, key==0): event
     # Build raw data table to be rendered
-    return [(source, dest, events[source, dest, 0]) for source, dest in traversal()]
+    for source, dest in traversal():
+        yield (source, dest, events[source, dest, 0])
 
 
-def tabulate(graph, header=None, tablefmt=None, source=None, traversal=None):
+def tabulate(automaton, header=None, tablefmt=None, traversal=None):
+    """ Render an automaton's transition table as in
+    text format.
+
+    The transition table has three columns: source node,
+    destination node and the name of the event.
+
+    A simple example will be formatted as follows:
+
+        >>> class TrafficLight(Automaton):
+        ...     go = Event('red', 'green')
+        ...     slowdown = Event('green', 'yellow')
+        ...     stop = Event('yellow', 'red')
+        >>> tabulate(TrafficLight) # doctest: +SKIP
+
+        ========  ======  ========
+        Source    Dest    Event
+        ========  ======  ========
+        green     yellow  slowdown
+        yellow    red     stop
+        red       green   go
+        ========  ======  ========
+
+    Parameters
+    ----------
+    automaton : `~automaton.Automaton`
+        The automaton to be rendered. It can be both
+        a class and an instance.
+    header : list[str, str, str]
+        An optional list of fields to be used as table
+        headers. Defaults to a predefined header.
+    tablefmt str, optional
+        Specifies the output format for the table.
+        All formats supported by
+        `tabulate <https://pypi.python.org/pypi/tabulate>`_
+        package are supported (e.g.: ``rst`` for
+        reStructuredText, ``pipe`` for Markdown).
+        Defaults to ``rst``.
+    traversal : callable(graph), optional
+        An optional callable used to sort the events.
+        It has the same meaning as the ``traversal``
+        parameter of `automaton.to_table`.
+
+    Returns
+    -------
+    str
+        Returns the formatted transition table.
+    """
+    graph = automaton.__graph__
     header = header or ['Source', 'Dest', 'Event']
-    table = to_table(graph=graph, source=source, traversal=traversal)
+    tablefmt = tablefmt or 'rst'
+    table = to_table(graph=graph, traversal=traversal)
     return tabulator.tabulate(table, header, tablefmt=tablefmt)

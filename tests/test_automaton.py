@@ -435,7 +435,8 @@ def test_format(header, tablefmt):
     class Sink(Automaton):
         event1 = Event('state_a', 'state_b')
         event2 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink1')
-        event3 = Event(('state_a', 'state_b', 'state_c', 'state_d', 'sink1'), 'sink2')
+        event3 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink2')
         event4 = Event('sink2', 'state_a')
 
-    assert tabulate(Sink.__graph__, header=header, tablefmt=tablefmt)
+    assert tabulate(Sink, header=header, tablefmt=tablefmt)
+    print(plantuml(Sink))
