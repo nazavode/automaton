@@ -536,15 +536,13 @@ def transition_table(automaton, traversal=None):
         the name of the event associated with the edge.
     """
     graph = automaton.__graph__
-    if traversal:
-        traversal = lambda: traversal(graph)
-    else:
-        traversal = lambda: sorted(graph.edges(), key=lambda e: len(graph.in_edges(e[0])))
+    if not traversal:
+        traversal = lambda G: sorted(G.edges(), key=lambda e: len(G.in_edges(e[0])))
     # Retrieve event names since networkx traversal
     # functions lack data retrieval
     events = nx.get_edge_attributes(graph, 'event')  # -> (source, dest, key==0): event
     # Build raw data table to be rendered
-    for source, dest in traversal():
+    for source, dest in traversal(graph):
         yield (source, dest, events[source, dest, 0])
 
 
