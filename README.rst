@@ -62,6 +62,17 @@ You can find the full documentation at http://automaton.readthedocs.org.
 Changes
 =======
 
+1.2.0 - **unreleased**
+Added
+`````
+- Custom format specifiers for ``Automaton`` definitions (classes and instances).
+- Auto-docstring completion: if requested, the automaton textual representation
+    is automatically added to the ``__doc__`` class attribute.
+
+Changed
+`````
+- Refactored formatting functions to more streamlined and coherent interfaces.
+
 1.1.0 - 2017-01-28
 --------------------
 Added
@@ -100,8 +111,7 @@ Added
 .. |codeqa| image:: https://api.codacy.com/project/badge/Grade/0eb6d3a1a1b04030852e153b13f7cbc9
    :target: https://www.codacy.com/app/federico-ficarelli/automaton?utm_source=github.com&utm_medium=referral&utm_content=nazavode/automaton&utm_campaign=badger
    :alt: Codacy Badge
-   
+
 .. |pypi| image:: https://badge.fury.io/py/python-automaton.svg
     :target: https://badge.fury.io/py/python-automaton
     :alt: PyPI
-   

@@ -40,6 +40,21 @@ def test_str(traffic_light):
     assert str(auto) == '<TrafficLight@green>'
 
 
+@pytest.mark.parametrize('fmt', [''] +
+                         list(transitiontable.SUPPORTED_FORMATS) +
+                         list(stategraph.SUPPORTED_FORMATS))
+def test_format_specifiers(traffic_light, fmt):
+    auto = traffic_light()
+    fmtstr = '{:' + fmt + '}'
+    formatted_inst = fmtstr.format(auto)
+    formatted_class = fmtstr.format(traffic_light)
+    if fmt:
+        assert formatted_inst == formatted_class
+    assert formatted_class
+    assert formatted_class != fmtstr
+    assert formatted_inst
+    assert formatted_inst != fmtstr
+
 def test_definition():
     class Simple(Automaton):
         __default_initial_state__ = 'state_a'

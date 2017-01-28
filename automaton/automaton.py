@@ -233,6 +233,9 @@ class AutomatonMeta(type):
             cls.__graph__ = nx.freeze(graph)
         return cls
 
+    def __format__(cls, fmt):
+        return __automaton_format__(cls, fmt)
+
 
 class Automaton(metaclass=AutomatonMeta):
     """ Base class for automaton types.
@@ -459,16 +462,37 @@ class Automaton(metaclass=AutomatonMeta):
         return '<{}@{}>'.format(self.__class__.__name__, self.state)
 
     def __format__(self, fmt):
-        if fmt in stategraph.SUPPORTED_FORMATS:
-            return stategraph(self, fmt=fmt)
-        elif fmt in transitiontable.SUPPORTED_FORMATS:
-            return transitiontable(self, fmt=fmt)
-        else:
-            return str(self)
+        return __automaton_format__(self, fmt)
 
 
 #########################################################################
 # Rendering stuff, everything beyond this point is formatting for humans.
+
+def __automaton_format__(automaton, fmt):
+    """ Support for custom format specifiers.
+
+    Parameters
+    ----------
+    automaton : `~automaton.Automaton` (instance or subclass)
+        The automaton to be formatted. It can be both an
+        instance and a class.
+    fmt : str
+        The format specifier.
+
+    Returns
+    -------
+    str
+        The string representation according to the rquested
+        format specifier.
+    """
+    cls = automaton.__class__ if isinstance(automaton, Automaton) else automaton
+    if fmt in stategraph.SUPPORTED_FORMATS:
+        return stategraph(cls, fmt=fmt)
+    elif fmt in transitiontable.SUPPORTED_FORMATS:
+        return transitiontable(cls, fmt=fmt)
+    else:
+        return str(automaton)
+
 
 def get_table(automaton, traversal=None):
     """ Build the transition table of the given automaton.
