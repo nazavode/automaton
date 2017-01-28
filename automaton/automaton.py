@@ -31,9 +31,9 @@ __all__ = (
     "AutomatonError",
     "DefinitionError",
     "InvalidTransitionError",
-    "transition_table",
-    "plantuml",
-    "tabulate",
+    "transitiontable",
+    "stategraph",
+    "get_table",
 )
 
 
@@ -231,7 +231,14 @@ class AutomatonMeta(type):
                 )
             # 4. Save
             cls.__graph__ = nx.freeze(graph)
+            # 5. Docstring substitution
+            if cls.__doc__:
+                cls.__doc__ = cls.__doc__.format(automaton=cls)
+
         return cls
+
+    def __format__(cls, fmt):
+        return __automaton_format__(cls, fmt)
 
 
 class Automaton(metaclass=AutomatonMeta):
@@ -458,60 +465,41 @@ class Automaton(metaclass=AutomatonMeta):
     def __str__(self):
         return '<{}@{}>'.format(self.__class__.__name__, self.state)
 
+    def __format__(self, fmt):
+        return __automaton_format__(self, fmt)
+
 
 #########################################################################
 # Rendering stuff, everything beyond this point is formatting for humans.
 
-def plantuml(automaton, traversal=None):
-    """ Render an automaton's state-transition graph as a
-    `PlantUML state diagram <http://plantuml.com/state-diagram>`_.
-
-    A simple example will be formatted as follows:
-
-        >>> class TrafficLight(Automaton):
-        ...     go = Event('red', 'green')
-        ...     slowdown = Event('green', 'yellow')
-        ...     stop = Event('yellow', 'red')
-        >>> print( plantuml(TrafficLight) )  # doctest: +SKIP
-
-        @startuml
-            green --> yellow : slowdown
-            yellow --> red : stop
-            red --> green : go
-        @enduml
+def __automaton_format__(automaton, fmt):
+    """ Support for custom format specifiers.
 
     Parameters
     ----------
-    automaton : `~automaton.Automaton`
-        The automaton to be rendered. It can be both
-        a class and an instance.
-    traversal : callable(graph), optional
-        An optional callable used to sort the events.
-        It has the same meaning as the ``traversal``
-        parameter of `automaton.transition_table`.
+    automaton : `~automaton.Automaton` (instance or subclass)
+        The automaton to be formatted. It can be both an
+        instance and a class.
+    fmt : str
+        The format specifier.
 
     Returns
     -------
     str
-        Returns the formatted state graph.
+        The string representation according to the rquested
+        format specifier.
     """
-    graph = automaton.__graph__
-    source_nodes = filter(lambda n: not graph.in_edges(n), graph.nodes())
-    sink_nodes = filter(lambda n: not graph.out_edges(n), graph.nodes())
-    sources = [('[*]', node) for node in source_nodes]
-    sinks = [(node, '[*]') for node in sink_nodes]
-    table = transition_table(automaton, traversal=traversal)
-    return """@startuml
-{}
-{}
-{}
-@enduml""".format('\n'.join(['    {} --> {}'.format(*row) for row in sources]),
-                  '\n'.join(['    {} --> {} : {}'.format(*row) for row in table]),
-                  '\n'.join(['    {} --> {}'.format(*row) for row in sinks]))
+    cls = automaton.__class__ if isinstance(automaton, Automaton) else automaton
+    if fmt in stategraph.SUPPORTED_FORMATS:
+        return stategraph(cls, fmt=fmt)
+    elif fmt in transitiontable.SUPPORTED_FORMATS:
+        return transitiontable(cls, fmt=fmt)
+    else:
+        return str(automaton)
 
 
-def transition_table(automaton, traversal=None):
-    """ Build the adjacency table of the given graph.
+def get_table(automaton, traversal=None):
+    """ Build the transition table of the given automaton.
 
     Parameters
     ----------
@@ -546,8 +534,66 @@ def transition_table(automaton, traversal=None):
         yield (source, dest, events[source, dest, 0])
 
 
-def tabulate(automaton, header=None, tablefmt=None, traversal=None):
-    """ Render an automaton's transition table as in
+def stategraph(automaton, fmt=None, traversal=None):  # pylint: disable=unused-argument
+    """ Render an automaton's state-transition graph.
+
+    A simple example will be formatted as follows:
+
+        >>> class TrafficLight(Automaton):
+        ...     go = Event('red', 'green')
+        ...     slowdown = Event('green', 'yellow')
+        ...     stop = Event('yellow', 'red')
+        >>> print( plantuml(TrafficLight) )  # doctest: +SKIP
+
+        @startuml
+            green --> yellow : slowdown
+            yellow --> red : stop
+            red --> green : go
+        @enduml
+
+    Parameters
+    ----------
+    automaton : `~automaton.Automaton`
+        The automaton to be rendered. It can be both
+        a class and an instance.
+    fmt str, optional
+        Specifies the output format for the graph.
+        Currently, the only supported format is
+        `PlantUML <http://plantuml.com/state-diagram>`_.
+        Defaults to ``plantuml``, unknown format specifiers
+        are ignored.
+    traversal : callable(graph), optional
+        An optional callable used to sort the events.
+        It has the same meaning as the ``traversal``
+        parameter of `automaton.transition_table`.
+
+    Returns
+    -------
+    str
+        Returns the formatted state graph.
+    """
+    graph = automaton.__graph__
+    source_nodes = filter(lambda n: not graph.in_edges(n), graph.nodes())
+    sink_nodes = filter(lambda n: not graph.out_edges(n), graph.nodes())
+    sources = [('[*]', node) for node in source_nodes]
+    sinks = [(node, '[*]') for node in sink_nodes]
+    table = get_table(automaton, traversal=traversal)
+    return """@startuml
+{}
+{}
+{}
+@enduml""".format('\n'.join(['    {} --> {}'.format(*row) for row in sources]),
+                  '\n'.join(['    {} --> {} : {}'.format(*row) for row in table]),
+                  '\n'.join(['    {} --> {}'.format(*row) for row in sinks]))
+
+
+stategraph.SUPPORTED_FORMATS = frozenset([
+    'plantuml',
+])
+
+
+def transitiontable(automaton, header=None, fmt=None, traversal=None):
+    """ Render an automaton's transition table in
     text format.
 
     The transition table has three columns: source node,
@@ -577,7 +623,7 @@ def tabulate(automaton, header=None, tablefmt=None, traversal=None):
     header : list[str, str, str]
         An optional list of fields to be used as table
         headers. Defaults to a predefined header.
-    tablefmt str, optional
+    fmt str, optional
         Specifies the output format for the table.
         All formats supported by
         `tabulate <https://pypi.python.org/pypi/tabulate>`_
@@ -595,6 +641,13 @@ def tabulate(automaton, header=None, tablefmt=None, traversal=None):
         Returns the formatted transition table.
     """
     header = header or ['Source', 'Dest', 'Event']
-    tablefmt = tablefmt or 'rst'
-    table = transition_table(automaton=automaton, traversal=traversal)
-    return tabulator.tabulate(table, header, tablefmt=tablefmt)
+    fmt = fmt or 'rst'
+    table = get_table(automaton=automaton, traversal=traversal)
+    return tabulator.tabulate(table, header, tablefmt=fmt)
+
+
+transitiontable.SUPPORTED_FORMATS = frozenset([
+    'plain', 'simple', 'grid', 'fancy_grid', 'pipe', 'orgtbl',
+    'jira', 'psql', 'rst', 'mediawiki', 'moinmoin', 'html', 'latex',
+    'latex_booktabs', 'textile'
+])

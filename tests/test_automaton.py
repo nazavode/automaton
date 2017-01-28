@@ -40,6 +40,51 @@ def test_str(traffic_light):
     assert str(auto) == '<TrafficLight@green>'
 
 
+@pytest.mark.parametrize('fmt', [''] +
+                         list(transitiontable.SUPPORTED_FORMATS) +
+                         list(stategraph.SUPPORTED_FORMATS))
+def test_format_specifiers(traffic_light, fmt):
+    auto = traffic_light()
+    fmtstr = '{:' + fmt + '}'
+    formatted_inst = fmtstr.format(auto)
+    formatted_class = fmtstr.format(traffic_light)
+    if fmt:
+        assert formatted_inst == formatted_class
+    assert formatted_class
+    assert formatted_class != fmtstr
+    assert formatted_inst
+    assert formatted_inst != fmtstr
+
+
+def test_docstring_substitution():
+    class NoDoc(Automaton):
+        event1 = Event('state_a', 'state_b')
+
+    class EmptyDoc(Automaton):
+        """"""
+        e = Event('a', 'b')
+
+    class FullDoc(Automaton):
+        """This is a test class"""
+        event1 = Event('state_a', 'state_b')
+
+    class SubstitutionDoc(Automaton):
+        """ This is the automaton representation:
+        {automaton:plantuml}
+        """
+        event1 = Event('state_a', 'state_b')
+
+    assert NoDoc.__doc__ is None
+    assert EmptyDoc.__doc__ == """"""
+    assert FullDoc.__doc__ == """This is a test class"""
+    assert SubstitutionDoc.__doc__
+    assert SubstitutionDoc.__doc__ != """ This is the automaton representation:
+    {automaton:plantuml}
+    """
+    '{automaton:plantuml}'.format(automaton=SubstitutionDoc) in SubstitutionDoc.__doc__
+    assert stategraph(SubstitutionDoc) in SubstitutionDoc.__doc__
+
+
 def test_definition():
     class Simple(Automaton):
         __default_initial_state__ = 'state_a'
@@ -433,8 +478,8 @@ def traversal(request):
 
 
 @pytest.mark.parametrize('header', [None, [], [1, 2, 3], ['a', 'b', 'c']])
-@pytest.mark.parametrize('tablefmt', [None, '', 'rst', 'pipe'])
-def test_tabulate(header, tablefmt, traversal):
+@pytest.mark.parametrize('fmt', [None, ''] + list(transitiontable.SUPPORTED_FORMATS))
+def test_transitiontable(header, fmt, traversal):
 
     class Sink(Automaton):
         event1 = Event('state_a', 'state_b')
@@ -442,21 +487,11 @@ def test_tabulate(header, tablefmt, traversal):
         event3 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink2')
         event4 = Event('sink2', 'state_a')
 
-    assert tabulate(Sink, header=header, tablefmt=tablefmt, traversal=traversal)
+    assert transitiontable(Sink, header=header, fmt=fmt, traversal=traversal)
 
 
-def test_plantuml(traversal):
-
-    class Sink(Automaton):
-        event1 = Event('state_a', 'state_b')
-        event2 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink1')
-        event3 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink2')
-        event4 = Event('sink2', 'state_a')
-
-    assert plantuml(Sink, traversal=traversal)
-
-
-def test_transition_table(traversal):
+@pytest.mark.parametrize('fmt', [None, ''] + list(stategraph.SUPPORTED_FORMATS))
+def test_stategraph(fmt, traversal):
 
     class Sink(Automaton):
         event1 = Event('state_a', 'state_b')
@@ -464,7 +499,18 @@ def test_transition_table(traversal):
         event3 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink2')
         event4 = Event('sink2', 'state_a')
 
-    table = list(transition_table(Sink, traversal=traversal))
+    assert stategraph(Sink, fmt=fmt, traversal=traversal)
+
+
+def test_get_table(traversal):
+
+    class Sink(Automaton):
+        event1 = Event('state_a', 'state_b')
+        event2 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink1')
+        event3 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink2')
+        event4 = Event('sink2', 'state_a')
+
+    table = list(get_table(Sink, traversal=traversal))
     assert table
     assert len(table) == 10
     for row in table:
