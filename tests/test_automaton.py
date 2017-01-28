@@ -55,6 +55,36 @@ def test_format_specifiers(traffic_light, fmt):
     assert formatted_inst
     assert formatted_inst != fmtstr
 
+
+def test_docstring_substitution():
+    class NoDoc(Automaton):
+        event1 = Event('state_a', 'state_b')
+
+    class EmptyDoc(Automaton):
+        """"""
+        e = Event('a', 'b')
+
+    class FullDoc(Automaton):
+        """This is a test class"""
+        event1 = Event('state_a', 'state_b')
+
+    class SubstitutionDoc(Automaton):
+        """ This is the automaton representation:
+        {automaton:plantuml}
+        """
+        event1 = Event('state_a', 'state_b')
+
+    assert NoDoc.__doc__ is None
+    assert EmptyDoc.__doc__ == """"""
+    assert FullDoc.__doc__ == """This is a test class"""
+    assert SubstitutionDoc.__doc__
+    assert SubstitutionDoc.__doc__ != """ This is the automaton representation:
+    {automaton:plantuml}
+    """
+    '{automaton:plantuml}'.format(automaton=SubstitutionDoc) in SubstitutionDoc.__doc__
+    assert stategraph(SubstitutionDoc) in SubstitutionDoc.__doc__
+
+
 def test_definition():
     class Simple(Automaton):
         __default_initial_state__ = 'state_a'

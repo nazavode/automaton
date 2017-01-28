@@ -231,6 +231,10 @@ class AutomatonMeta(type):
                 )
             # 4. Save
             cls.__graph__ = nx.freeze(graph)
+            # 5. Docstring substitution
+            if cls.__doc__:
+                cls.__doc__ = cls.__doc__.format(automaton=cls)
+
         return cls
 
     def __format__(cls, fmt):
