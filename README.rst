@@ -62,12 +62,13 @@ You can find the full documentation at http://automaton.readthedocs.org.
 Changes
 =======
 
-1.2.0 - **unreleased**
+**unreleased**
+--------------
 Added
 `````
 - Custom format specifiers for ``Automaton`` definitions (classes and instances).
 - Auto-docstring completion: if requested, the automaton textual representation
-    is automatically added to the ``__doc__`` class attribute.
+  is automatically added to the ``__doc__`` class attribute.
 
 Changed
 `````
