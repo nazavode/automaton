@@ -27,9 +27,9 @@ from .automaton import (  # noqa: F401
     AutomatonError,
     DefinitionError,
     InvalidTransitionError,
-    tabulate,
-    plantuml,
-    transition_table,
+    transitiontable,
+    stategraph,
+    get_table,
 )
 
 

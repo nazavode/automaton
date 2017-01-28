@@ -433,8 +433,8 @@ def traversal(request):
 
 
 @pytest.mark.parametrize('header', [None, [], [1, 2, 3], ['a', 'b', 'c']])
-@pytest.mark.parametrize('tablefmt', [None, '', 'rst', 'pipe'])
-def test_tabulate(header, tablefmt, traversal):
+@pytest.mark.parametrize('fmt', [None, ''] + list(transitiontable.SUPPORTED_FORMATS))
+def test_transitiontable(header, fmt, traversal):
 
     class Sink(Automaton):
         event1 = Event('state_a', 'state_b')
@@ -442,21 +442,11 @@ def test_tabulate(header, tablefmt, traversal):
         event3 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink2')
         event4 = Event('sink2', 'state_a')
 
-    assert tabulate(Sink, header=header, tablefmt=tablefmt, traversal=traversal)
+    assert transitiontable(Sink, header=header, fmt=fmt, traversal=traversal)
 
 
-def test_plantuml(traversal):
-
-    class Sink(Automaton):
-        event1 = Event('state_a', 'state_b')
-        event2 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink1')
-        event3 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink2')
-        event4 = Event('sink2', 'state_a')
-
-    assert plantuml(Sink, traversal=traversal)
-
-
-def test_transition_table(traversal):
+@pytest.mark.parametrize('fmt', [None, ''] + list(stategraph.SUPPORTED_FORMATS))
+def test_stategraph(fmt, traversal):
 
     class Sink(Automaton):
         event1 = Event('state_a', 'state_b')
@@ -464,7 +454,18 @@ def test_transition_table(traversal):
         event3 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink2')
         event4 = Event('sink2', 'state_a')
 
-    table = list(transition_table(Sink, traversal=traversal))
+    assert stategraph(Sink, fmt=fmt, traversal=traversal)
+
+
+def test_get_table(traversal):
+
+    class Sink(Automaton):
+        event1 = Event('state_a', 'state_b')
+        event2 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink1')
+        event3 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink2')
+        event4 = Event('sink2', 'state_a')
+
+    table = list(get_table(Sink, traversal=traversal))
     assert table
     assert len(table) == 10
     for row in table:
