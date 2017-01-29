@@ -62,7 +62,7 @@ You can find the full documentation at http://automaton.readthedocs.org.
 Changes
 =======
 
-**unreleased**
+1.2.0 - 2017-01-29
 --------------
 Added
 `````
