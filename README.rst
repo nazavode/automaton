@@ -73,6 +73,7 @@ Added
 Changed
 `````
 - Refactored formatting functions to more streamlined and coherent interfaces.
+- Removed package, now the whole library lives in one module file.
 
 1.1.0 - 2017-01-28
 --------------------
