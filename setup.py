@@ -34,6 +34,7 @@ setup(
     author="Federico Ficarelli",
     author_email="federico.ficarelli@gmail.com",
     url="https://github.com/nazavode/automaton",
+    # package_dir={"": "src"},
     modules=['automaton'],
     install_requires=['networkx', 'tabulate'],
     classifiers=[
