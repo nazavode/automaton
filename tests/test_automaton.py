@@ -21,11 +21,6 @@ import pytest
 from automaton import *
 
 
-def test_path():
-    import automaton
-    assert not automaton.__file__
-
-
 @pytest.fixture
 def traffic_light():
     class TrafficLight(Automaton):
