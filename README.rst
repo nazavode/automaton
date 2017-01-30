@@ -62,8 +62,8 @@ You can find the full documentation at http://automaton.readthedocs.org.
 Changes
 =======
 
-1.2.1 - *unreleased*
---------------------
+1.2.1 - 2017-01-30
+------------------
 Fixed
 `````
 - Severe distribution issue: package was missing some files.
