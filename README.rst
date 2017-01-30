@@ -62,8 +62,14 @@ You can find the full documentation at http://automaton.readthedocs.org.
 Changes
 =======
 
-Unreleased
-----------
+1.2.1 - *unreleased*
+--------------------
+Fixed
+`````
+- Severe distribution issue: package was missing some files.
+- Tox testing: ``py.test`` was running against *source files*,
+  **not against the package installed in ``tox`` virtualenv**.
+
 
 1.2.0 - 2017-01-29
 ------------------
