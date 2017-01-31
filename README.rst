@@ -62,6 +62,18 @@ You can find the full documentation at http://automaton.readthedocs.org.
 Changes
 =======
 
+1.3.0 - **unreleased**
+----------------------
+Added
+`````
+- Query method to obtain destination state for a specific event.
+- New constructor to initialize an automaton given an initial
+  *startup* event.
+
+Changed
+```````
+- Improved reference and documentation.
+
 1.2.1 - 2017-01-30
 ------------------
 Fixed
