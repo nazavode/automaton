@@ -72,6 +72,8 @@ Added
 
 Changed
 ```````
+- Misc bugs fixed.
+- Tests cleanup.
 - Improved reference and documentation.
 
 1.2.1 - 2017-01-30
