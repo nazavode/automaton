@@ -160,6 +160,7 @@ def test_unconnected_naive():
             cluster2 = Event('state_c', 'state_d')
 
 
+@pytest.mark.xfail
 def test_empty():
     class Empty(Automaton):
         pass
@@ -471,6 +472,7 @@ def test_out_events():
         set(Star.out_events('unknown1', 'unknown2', 'center'))  # Unknown state
 
 
+@pytest.mark.xfail
 def test_event_edges(Sink):
     event = Event('a', 'b')
     event.bind('testevent')
@@ -517,3 +519,36 @@ def test_get_table(Sink, traversal):
         assert len(row) == 3
     # Instance
     assert list(get_table(Sink(), traversal=traversal)) == table
+
+
+@pytest.mark.xfail
+def test_get_dest_state(Sink):
+    # Class
+    assert Sink.event1.dest_state == 'state_b'
+    assert Sink.event2.dest_state == 'sink1'
+    assert Sink.event3.dest_state == 'sink2'
+    assert Sink.event4.dest_state == 'state_a'
+    # Instance
+    s = Sink()
+    assert s.event1.dest_state == 'state_b'
+    assert s.event2.dest_state == 'sink1'
+    assert s.event3.dest_state == 'sink2'
+    assert s.event4.dest_state == 'state_1'
+
+
+@pytest.mark.xfail
+def test_initial_event(Sink):
+    s = Sink(initial_event='event1')
+    assert s.state == 'state_b'
+    s.event2()
+    assert s.state == 'sink1'
+    s = Sink(initial_event='event2')
+    assert s.state == 'sink1'
+    s = Sink(initial_event='event3')
+    assert s.state == 'sink2'
+    s = Sink(initial_event='event4')
+    assert s.state == 'state_1'
+    with pytest.raises(InvalidTransitionError):
+        s = Sink(initial_event='unknown')
+    with pytest.raises(InvalidTransitionError):
+        s = Sink(initial_event=1.0)
