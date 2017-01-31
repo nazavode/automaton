@@ -450,7 +450,17 @@ def test_out_events():
         set(Star.out_events('unknown1', 'unknown2', 'center'))  # Unknown state
 
 
-def test_event_edges():
+@pytest.fixture
+def Sink():
+    class _Sink(Automaton):
+        event1 = Event('state_a', 'state_b')
+        event2 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink1')
+        event3 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink2')
+        event4 = Event('sink2', 'state_a')
+    return _Sink
+
+
+def test_event_edges(Sink):
     event = Event('a', 'b')
     event.bind('testevent')
     assert list(event.edges()) == [('a', 'b')]
@@ -463,11 +473,6 @@ def test_event_edges():
         ('b', 'x', {'event': 'testevent'}), ('c', 'x', {'event': 'testevent'}),
         ('d', 'x', {'event': 'testevent'})]
     #
-    class Sink(Automaton):
-        event1 = Event('state_a', 'state_b')
-        event2 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink1')
-        event3 = Event(('state_a', 'state_b', 'state_c', 'state_d', 'sink1'), 'sink2')
-        event4 = Event('sink2', 'state_a')
     assert list(Sink.event2.edges()) == \
         [('state_a', 'sink1'), ('state_b', 'sink1'), ('state_c', 'sink1'), ('state_d', 'sink1')]
 
@@ -479,36 +484,18 @@ def traversal(request):
 
 @pytest.mark.parametrize('header', [None, [], [1, 2, 3], ['a', 'b', 'c']])
 @pytest.mark.parametrize('fmt', [None, ''] + list(transitiontable.SUPPORTED_FORMATS))
-def test_transitiontable(header, fmt, traversal):
-
-    class Sink(Automaton):
-        event1 = Event('state_a', 'state_b')
-        event2 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink1')
-        event3 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink2')
-        event4 = Event('sink2', 'state_a')
+def test_transitiontable(Sink, header, fmt, traversal):
 
     assert transitiontable(Sink, header=header, fmt=fmt, traversal=traversal)
 
 
 @pytest.mark.parametrize('fmt', [None, ''] + list(stategraph.SUPPORTED_FORMATS))
-def test_stategraph(fmt, traversal):
-
-    class Sink(Automaton):
-        event1 = Event('state_a', 'state_b')
-        event2 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink1')
-        event3 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink2')
-        event4 = Event('sink2', 'state_a')
+def test_stategraph(Sink, fmt, traversal):
 
     assert stategraph(Sink, fmt=fmt, traversal=traversal)
 
 
-def test_get_table(traversal):
-
-    class Sink(Automaton):
-        event1 = Event('state_a', 'state_b')
-        event2 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink1')
-        event3 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink2')
-        event4 = Event('sink2', 'state_a')
+def test_get_table(Sink, traversal):
 
     table = list(get_table(Sink, traversal=traversal))
     assert table
