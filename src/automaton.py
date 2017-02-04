@@ -418,7 +418,7 @@ class Automaton(metaclass=AutomatonMeta):
     @classmethod
     def _get_cut(cls, *states, inbound=True):
         """ Retrieves all the events that form a cut for the
-        all the specified subgraphs.
+        specified subgraphs.
 
         Parameters
         ----------
