@@ -66,8 +66,8 @@ Changes
 ----------------------
 Added
 `````
-- Query method to obtain destination state for a specific event.
-- New constructor to initialize an automaton given an initial
+- Enabled access to all event's attributes from automaton instances.
+- New constructor parameter to initialize an automaton given an initial
   *startup* event.
 
 Changed
