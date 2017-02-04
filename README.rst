@@ -62,8 +62,10 @@ You can find the full documentation at http://automaton.readthedocs.org.
 Changes
 =======
 
+
 1.3.0 - **unreleased**
 ----------------------
+
 Added
 `````
 - Enabled access to all event's attributes from automaton instances.
@@ -76,8 +78,10 @@ Changed
 - Tests cleanup.
 - Improved reference and documentation.
 
+
 1.2.1 - 2017-01-30
 ------------------
+
 Fixed
 `````
 - Severe distribution issue: package was missing some files.
@@ -87,6 +91,7 @@ Fixed
 
 1.2.0 - 2017-01-29
 ------------------
+
 Added
 `````
 - Custom format specifiers for ``Automaton`` definitions (classes and instances).
@@ -98,14 +103,18 @@ Changed
 - Refactored formatting functions to more streamlined and coherent interfaces.
 - Removed package, now the whole library lives in one module file.
 
+
 1.1.0 - 2017-01-28
 ------------------
+
 Added
 `````
 - Automaton representation as transition table or state-transition graph.
 
+
 1.0.0 - 2017-01-25
 ------------------
+
 Added
 `````
 - Functions to retrieve incoming and outgoing events from a state or a set of states.
