@@ -128,6 +128,21 @@ def test_definition():
     assert 'event3' not in simple_obj.events()
 
 
+def test_proxy():
+    class Simple(Automaton):
+        __default_initial_state__ = 'state_a'
+        event1 = Event('state_a', 'state_b')
+
+    s = Simple()
+
+    assert Simple.event1.name == s.event1.name
+    assert Simple.event1.source_states == s.event1.source_states
+    assert Simple.event1.dest_state == s.event1.dest_state
+    with pytest.raises(TypeError):
+        Simple.event1()
+    s.event1()
+
+
 def test_initial_state():
     # Invalid initial state
     with pytest.raises(DefinitionError):
@@ -472,15 +487,14 @@ def test_out_events():
         set(Star.out_events('unknown1', 'unknown2', 'center'))  # Unknown state
 
 
-@pytest.mark.xfail
 def test_event_edges(Sink):
     event = Event('a', 'b')
-    event.bind('testevent')
+    event._bind('testevent')
     assert list(event.edges()) == [('a', 'b')]
     assert list(event.edges(data=True)) == [('a', 'b', {'event': 'testevent'})]
     #
     event = Event(('a', 'b', 'c', 'd'), 'x')
-    event.bind('testevent')
+    event._bind('testevent')
     assert list(event.edges()) == [('a', 'x'), ('b', 'x'), ('c', 'x'), ('d', 'x')]
     assert list(event.edges(data=True)) == [('a', 'x', {'event': 'testevent'}),
         ('b', 'x', {'event': 'testevent'}), ('c', 'x', {'event': 'testevent'}),
@@ -521,7 +535,6 @@ def test_get_table(Sink, traversal):
     assert list(get_table(Sink(), traversal=traversal)) == table
 
 
-@pytest.mark.xfail
 def test_get_dest_state(Sink):
     # Class
     assert Sink.event1.dest_state == 'state_b'
@@ -533,7 +546,7 @@ def test_get_dest_state(Sink):
     assert s.event1.dest_state == 'state_b'
     assert s.event2.dest_state == 'sink1'
     assert s.event3.dest_state == 'sink2'
-    assert s.event4.dest_state == 'state_1'
+    assert s.event4.dest_state == 'state_a'
 
 
 @pytest.mark.xfail

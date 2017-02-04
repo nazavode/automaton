@@ -95,6 +95,19 @@ def unique_everseen(iterable, key=None):  # pragma: no cover
                 yield element
 
 
+class _EventProxy(object):  # pylint: disable=too-few-public-methods
+
+    def __init__(self, event, automaton):
+        self.__event = event
+        self.__automaton = automaton
+
+    def __getattr__(self, name):
+        return getattr(self.__event, name)
+
+    def __call__(self):
+        return self.__automaton.event(self.name)
+
+
 class Event(EventBase):
     """ Class that represents a state transition.
 
@@ -155,7 +168,7 @@ class Event(EventBase):
             components.append((dict(event=self.name), ))
         yield from product(*components)
 
-    def bind(self, name):
+    def _bind(self, name):
         """ Binds the :class:`~automaton.automaton.Event` instance
         to a particular event name.
 
@@ -180,7 +193,7 @@ class Event(EventBase):
                 # pylint: disable=attribute-defined-outside-init
                 self.__bound_instances = WeakKeyDictionary()
             if instance not in self.__bound_instances:
-                self.__bound_instances[instance] = lambda: instance.event(self._event_name)
+                self.__bound_instances[instance] = _EventProxy(event=self, automaton=instance)
             return self.__bound_instances[instance]
 
     def __set__(self, instance, value):
@@ -216,7 +229,7 @@ class AutomatonMeta(type):
             value = getattr(cls, attr)
             if isinstance(value, Event):
                 # Important: bind event to its name as a class member
-                value.bind(attr)
+                value._bind(attr)  # pylint: disable=protected-access
                 # Collect states
                 states.update(value[0])  # Iterable of sources states, let's update the set
                 states.add(value[1])
