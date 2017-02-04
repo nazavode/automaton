@@ -145,9 +145,9 @@ class Event(EventBase):
     @property
     def name(self):
         """ The actual user-defined name of the event as an
-        :class:`~automaton.automaton.Automaton` class member.
+        :class:`~automaton.Automaton` class member.
         If None, the Event isn't bounded to any specific
-        :class:`~automaton.automaton.Automaton` subclass. """
+        :class:`~automaton.Automaton` subclass. """
         return self._event_name
 
     def edges(self, data=False):
@@ -180,7 +180,7 @@ class Event(EventBase):
         yield from product(*components)
 
     def _bind(self, name):
-        """ Binds the :class:`~automaton.automaton.Event` instance
+        """ Binds the :class:`~automaton.Event` instance
         to a particular event name.
 
         .. warning::
@@ -196,7 +196,7 @@ class Event(EventBase):
 
     def __get__(self, instance, owner):
         """ Enables the descriptor semantics on
-        :class:`~automaton.automaton.Event` instances. """
+        :class:`~automaton.Event` instances. """
         if instance is None:
             return self
         else:
@@ -209,7 +209,7 @@ class Event(EventBase):
 
     def __set__(self, instance, value):
         """ Enables the descriptor semantics on
-        :class:`~automaton.automaton.Event` instances.
+        :class:`~automaton.Event` instances.
 
         Raises
         ------
@@ -223,7 +223,7 @@ class AutomatonMeta(type):
     """ The metaclass that must be applied on the ``automaton``-enabled classes'
     hierarchy.
 
-    The :meth:`~automaton.automaton.AutomatonMeta.__new__` method builds the
+    The :meth:`~automaton.AutomatonMeta.__new__` method builds the
     actual finite-state machine based on the user-provided events definition.
 
     Raises
@@ -294,13 +294,13 @@ class Automaton(metaclass=AutomatonMeta):
     initial_state : any, optional
         The initial state for this automaton instance. Defaults to None.
         Note that if automaton type has no default initial state
-        (specified via :attr:`~automaton.automaton.__default_initial_state__`),
+        (specified via :attr:`~automaton.__default_initial_state__`),
         this argument must be specified.
 
     accepting_states : iterable, optional
         The accepting states for this automaton instance. Defaults to None.
         Note that if automaton type has default accepting states
-        (specified via :attr:`~automaton.automaton.__default_accepting_states__`),
+        (specified via :attr:`~automaton.__default_accepting_states__`),
         this argument takes precedence over that.
 
     Raises
