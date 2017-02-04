@@ -296,6 +296,17 @@ class Automaton(metaclass=AutomatonMeta):
         Note that if automaton type has no default initial state
         (specified via :attr:`~automaton.__default_initial_state__`),
         this argument must be specified.
+    initial_event : any, optional
+        The initial event to be fired to deduce the initial state.
+        Defaults to `None`. Please note that `initial_state` and
+        and `initial_event` arguments *are mutually exclusive*,
+        specifying both of them will raise a `TypeError`.
+
+        .. note:
+            Since the *destination state* of an event is a *single state*
+            and due to the fact that events are class attributes
+            (so each event name is unique), *deducing the initial state
+            through a initial event is a well defined operation*.
 
     accepting_states : iterable, optional
         The accepting states for this automaton instance. Defaults to None.
@@ -309,6 +320,9 @@ class Automaton(metaclass=AutomatonMeta):
         The automaton type has no default initial state while no
         custom initial state specified during construction *or* the
         specified initial state is unknown.
+    TypeError
+        Both `initial_state` and `initial_event` arguments have been
+        specified while they are mutually exclusive.
     """
 
     __default_initial_state__ = None
@@ -317,7 +331,16 @@ class Automaton(metaclass=AutomatonMeta):
     __default_accepting_states__ = None
     """iterable: The default accepting states for the automaton type."""
 
-    def __init__(self, initial_state=None, accepting_states=None):
+    def __init__(self, initial_state=None, initial_event=None, accepting_states=None):
+        #
+        # 0. Initial event setup
+        #
+        if initial_event:
+            if initial_state:
+                raise TypeError("'initial_state' and 'initial_event' parameters can't be specified together")
+            if initial_event not in self.__events__:  # pylint: disable=no-member
+                raise InvalidTransitionError("Unrecognized event '{}'.".format(initial_event))
+            initial_state = getattr(self, initial_event).dest_state
         #
         # 1. Initial state setup
         #

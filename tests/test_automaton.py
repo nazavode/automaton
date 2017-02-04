@@ -549,8 +549,9 @@ def test_get_dest_state(Sink):
     assert s.event4.dest_state == 'state_a'
 
 
-@pytest.mark.xfail
 def test_initial_event(Sink):
+    with pytest.raises(TypeError):
+        s = Sink(initial_state='sink1', initial_event='event1')
     s = Sink(initial_event='event1')
     assert s.state == 'state_b'
     s.event2()
@@ -560,7 +561,7 @@ def test_initial_event(Sink):
     s = Sink(initial_event='event3')
     assert s.state == 'sink2'
     s = Sink(initial_event='event4')
-    assert s.state == 'state_1'
+    assert s.state == 'state_a'
     with pytest.raises(InvalidTransitionError):
         s = Sink(initial_event='unknown')
     with pytest.raises(InvalidTransitionError):
