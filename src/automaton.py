@@ -96,6 +96,17 @@ def unique_everseen(iterable, key=None):  # pragma: no cover
 
 
 class _EventProxy(object):  # pylint: disable=too-few-public-methods
+    """ Proxy class to access :class:`~automaton.Event`
+    attributes.
+
+    Forwards every attribute access to the underlying proxied
+    :class:`~automaton.Event`.
+
+    .. important:
+        Unlike :class:`~automaton.Event`, instances of this type
+        are callables that trigger event transition in the proxied
+        :class:`~automaton.Automaton` instance.
+    """
 
     def __init__(self, event, automaton):
         self.__event = event
