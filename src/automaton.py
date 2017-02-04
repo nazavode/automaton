@@ -302,7 +302,7 @@ class Automaton(metaclass=AutomatonMeta):
         and `initial_event` arguments *are mutually exclusive*,
         specifying both of them will raise a `TypeError`.
 
-        .. note:
+        .. note::
             Since the *destination state* of an event is a *single state*
             and due to the fact that events are class attributes
             (so each event name is unique), *deducing the initial state
@@ -539,9 +539,9 @@ def __automaton_format__(automaton, fmt):
 
     Parameters
     ----------
-    automaton : `~automaton.Automaton` (instance or subclass)
+    automaton : :class:`~automaton.Automaton`
         The automaton to be formatted. It can be both an
-        instance and a class.
+        instance or a class.
     fmt : str
         The format specifier.
 
@@ -565,7 +565,7 @@ def get_table(automaton, traversal=None):
 
     Parameters
     ----------
-    automaton : `~automaton.Automaton`
+    automaton : :class:`~automaton.Automaton`
         The automaton to be rendered. It can be both
         a class and an instance.
     traversal : callable(graph), optional
@@ -580,7 +580,7 @@ def get_table(automaton, traversal=None):
 
     Yields
     ------
-    (source, dest, event)
+    tuple(source, dest, event)
         Yields one row at a time as a tuple containing
         the source and destination node of the edge and
         the name of the event associated with the edge.
@@ -607,6 +607,8 @@ def stategraph(automaton, fmt=None, traversal=None):  # pylint: disable=unused-a
         ...     stop = Event('yellow', 'red')
         >>> print( plantuml(TrafficLight) )  # doctest: +SKIP
 
+    ::
+
         @startuml
             green --> yellow : slowdown
             yellow --> red : stop
@@ -615,10 +617,10 @@ def stategraph(automaton, fmt=None, traversal=None):  # pylint: disable=unused-a
 
     Parameters
     ----------
-    automaton : `~automaton.Automaton`
+    automaton : :class:`~automaton.Automaton`
         The automaton to be rendered. It can be both
         a class and an instance.
-    fmt str, optional
+    fmt : str, optional
         Specifies the output format for the graph.
         Currently, the only supported format is
         `PlantUML <http://plantuml.com/state-diagram>`_.
@@ -669,6 +671,8 @@ def transitiontable(automaton, header=None, fmt=None, traversal=None):
         ...     stop = Event('yellow', 'red')
         >>> tabulate(TrafficLight) # doctest: +SKIP
 
+    ::
+
         ========  ======  ========
         Source    Dest    Event
         ========  ======  ========
@@ -679,7 +683,7 @@ def transitiontable(automaton, header=None, fmt=None, traversal=None):
 
     Parameters
     ----------
-    automaton : `~automaton.Automaton`
+    automaton : :class:`~automaton.Automaton`
         The automaton to be rendered. It can be both
         a class and an instance.
     header : list[str, str, str]
