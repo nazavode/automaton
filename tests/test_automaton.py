@@ -20,34 +20,53 @@ import pytest
 
 from automaton import *
 
+###############################################################################
+# Fixtures
 
 @pytest.fixture
-def traffic_light():
-    class TrafficLight(Automaton):
+def TrafficLight():
+    class _TrafficLight(Automaton):
         __default_initial_state__ = 'red'
         __default_accepting_states__ = ('red', 'green')
         go = Event('red', 'green')
         slowdown = Event('green', 'yellow')
         stop = Event('yellow', 'red')
+    return _TrafficLight
 
-    return TrafficLight
+
+@pytest.fixture
+def Sink():
+    class _Sink(Automaton):
+        __default_initial_state__ = 'state_a'
+        event1 = Event('state_a', 'state_b')
+        event2 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink1')
+        event3 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink2')
+        event4 = Event('sink2', 'state_a')
+    return _Sink
 
 
-def test_str(traffic_light):
-    auto = traffic_light()
-    assert str(auto) == '<TrafficLight@red>'
+@pytest.fixture(params=[None, lambda G: G.edges(data=False)])
+def traversal(request):
+    return request.param
+
+###############################################################################
+# Tests
+
+def test_str_transition(TrafficLight):
+    auto = TrafficLight()
+    assert str(auto) == '<{}@{}>'.format(TrafficLight.__name__, auto.state)
     auto.go()
-    assert str(auto) == '<TrafficLight@green>'
+    assert str(auto) == '<{}@{}>'.format(TrafficLight.__name__, auto.state)
 
 
 @pytest.mark.parametrize('fmt', [''] +
                          list(transitiontable.SUPPORTED_FORMATS) +
                          list(stategraph.SUPPORTED_FORMATS))
-def test_format_specifiers(traffic_light, fmt):
-    auto = traffic_light()
+def test_format_specifiers(TrafficLight, fmt):
+    auto = TrafficLight()
     fmtstr = '{:' + fmt + '}'
     formatted_inst = fmtstr.format(auto)
-    formatted_class = fmtstr.format(traffic_light)
+    formatted_class = fmtstr.format(TrafficLight)
     if fmt:
         assert formatted_inst == formatted_class
     assert formatted_class
@@ -109,6 +128,21 @@ def test_definition():
     assert 'event3' not in simple_obj.events()
 
 
+def test_proxy():
+    class Simple(Automaton):
+        __default_initial_state__ = 'state_a'
+        event1 = Event('state_a', 'state_b')
+
+    s = Simple()
+
+    assert Simple.event1.name == s.event1.name
+    assert Simple.event1.source_states == s.event1.source_states
+    assert Simple.event1.dest_state == s.event1.dest_state
+    with pytest.raises(TypeError):
+        Simple.event1()
+    s.event1()
+
+
 def test_initial_state():
     # Invalid initial state
     with pytest.raises(DefinitionError):
@@ -141,9 +175,12 @@ def test_unconnected_naive():
             cluster2 = Event('state_c', 'state_d')
 
 
+@pytest.mark.xfail
 def test_empty():
     class Empty(Automaton):
         pass
+    assert not list(Empty.events())
+    assert not list(Empty.states())
 
 
 def test_unconnected():
@@ -213,8 +250,8 @@ def test_auto_arc():
     assert auto_obj.state == 'state_a'
 
 
-def test_transition(traffic_light):
-    crossroads = traffic_light()
+def test_transition(TrafficLight):
+    crossroads = TrafficLight()
     # Initial state
     assert crossroads.state == 'red'
     # Transitions
@@ -235,20 +272,20 @@ def test_transition(traffic_light):
     assert crossroads.state == 'green'
 
 
-def test_event_binding(traffic_light):
-    assert traffic_light.go.name == 'go'
-    assert traffic_light.slowdown.name == 'slowdown'
-    assert traffic_light.stop.name == 'stop'
+def test_event_binding(TrafficLight):
+    assert TrafficLight.go.name == 'go'
+    assert TrafficLight.slowdown.name == 'slowdown'
+    assert TrafficLight.stop.name == 'stop'
 
 
-def test_event_descriptor(traffic_light):
-    crossroads = traffic_light()
+def test_event_descriptor(TrafficLight):
+    crossroads = TrafficLight()
     with pytest.raises(AttributeError):
         crossroads.go = None
 
 
-def test_event_methods(traffic_light):
-    crossroads = traffic_light()
+def test_event_methods(TrafficLight):
+    crossroads = TrafficLight()
     # Initial state
     assert crossroads.state == 'red'
     # Transitions
@@ -273,8 +310,8 @@ def test_invalid_default_accepting_states():
             event1 = Event('state_a', 'state_b')
 
 
-def test_default_accepting_states(traffic_light):
-    crossroads = traffic_light()
+def test_default_accepting_states(TrafficLight):
+    crossroads = TrafficLight()
     # Initial state
     assert crossroads.state == 'red'
     assert crossroads.is_accepted
@@ -298,8 +335,8 @@ def test_default_accepting_states(traffic_light):
     assert crossroads.is_accepted
 
 
-def test_custom_accepting_states(traffic_light):
-    crossroads = traffic_light(accepting_states=('yellow', ))
+def test_custom_accepting_states(TrafficLight):
+    crossroads = TrafficLight(accepting_states=('yellow', ))
     # Initial state
     assert crossroads.state == 'red'
     assert not crossroads.is_accepted
@@ -323,9 +360,9 @@ def test_custom_accepting_states(traffic_light):
     assert not crossroads.is_accepted
 
 
-def test_invalid_custom_accepting_states(traffic_light):
+def test_invalid_custom_accepting_states(TrafficLight):
     with pytest.raises(DefinitionError):
-        crossroads = traffic_light(accepting_states=('yellow', 'unknown'))
+        crossroads = TrafficLight(accepting_states=('yellow', 'unknown'))
 
 
 def test_sink_state():
@@ -450,68 +487,82 @@ def test_out_events():
         set(Star.out_events('unknown1', 'unknown2', 'center'))  # Unknown state
 
 
-def test_event_edges():
+def test_event_edges(Sink):
     event = Event('a', 'b')
-    event.bind('testevent')
+    event._bind('testevent')
     assert list(event.edges()) == [('a', 'b')]
     assert list(event.edges(data=True)) == [('a', 'b', {'event': 'testevent'})]
     #
     event = Event(('a', 'b', 'c', 'd'), 'x')
-    event.bind('testevent')
+    event._bind('testevent')
     assert list(event.edges()) == [('a', 'x'), ('b', 'x'), ('c', 'x'), ('d', 'x')]
     assert list(event.edges(data=True)) == [('a', 'x', {'event': 'testevent'}),
         ('b', 'x', {'event': 'testevent'}), ('c', 'x', {'event': 'testevent'}),
         ('d', 'x', {'event': 'testevent'})]
-    #
-    class Sink(Automaton):
-        event1 = Event('state_a', 'state_b')
-        event2 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink1')
-        event3 = Event(('state_a', 'state_b', 'state_c', 'state_d', 'sink1'), 'sink2')
-        event4 = Event('sink2', 'state_a')
+    # Class
     assert list(Sink.event2.edges()) == \
         [('state_a', 'sink1'), ('state_b', 'sink1'), ('state_c', 'sink1'), ('state_d', 'sink1')]
-
-
-@pytest.fixture(params=[None, lambda G: G.edges(data=False)])
-def traversal(request):
-    return request.param
+    # Instance
+    assert list(Sink().event2.edges()) == \
+        [('state_a', 'sink1'), ('state_b', 'sink1'), ('state_c', 'sink1'), ('state_d', 'sink1')]
 
 
 @pytest.mark.parametrize('header', [None, [], [1, 2, 3], ['a', 'b', 'c']])
 @pytest.mark.parametrize('fmt', [None, ''] + list(transitiontable.SUPPORTED_FORMATS))
-def test_transitiontable(header, fmt, traversal):
-
-    class Sink(Automaton):
-        event1 = Event('state_a', 'state_b')
-        event2 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink1')
-        event3 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink2')
-        event4 = Event('sink2', 'state_a')
-
+def test_transitiontable(Sink, header, fmt, traversal):
+    # Class
     assert transitiontable(Sink, header=header, fmt=fmt, traversal=traversal)
+    # Instance
+    assert transitiontable(Sink(), header=header, fmt=fmt, traversal=traversal)
 
 
 @pytest.mark.parametrize('fmt', [None, ''] + list(stategraph.SUPPORTED_FORMATS))
-def test_stategraph(fmt, traversal):
-
-    class Sink(Automaton):
-        event1 = Event('state_a', 'state_b')
-        event2 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink1')
-        event3 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink2')
-        event4 = Event('sink2', 'state_a')
-
+def test_stategraph(Sink, fmt, traversal):
+    # Class
     assert stategraph(Sink, fmt=fmt, traversal=traversal)
+    # Instance
+    assert stategraph(Sink(), fmt=fmt, traversal=traversal)
 
 
-def test_get_table(traversal):
-
-    class Sink(Automaton):
-        event1 = Event('state_a', 'state_b')
-        event2 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink1')
-        event3 = Event(('state_a', 'state_b', 'state_c', 'state_d'), 'sink2')
-        event4 = Event('sink2', 'state_a')
-
+def test_get_table(Sink, traversal):
+    # Class
     table = list(get_table(Sink, traversal=traversal))
     assert table
     assert len(table) == 10
     for row in table:
         assert len(row) == 3
+    # Instance
+    assert list(get_table(Sink(), traversal=traversal)) == table
+
+
+def test_get_dest_state(Sink):
+    # Class
+    assert Sink.event1.dest_state == 'state_b'
+    assert Sink.event2.dest_state == 'sink1'
+    assert Sink.event3.dest_state == 'sink2'
+    assert Sink.event4.dest_state == 'state_a'
+    # Instance
+    s = Sink()
+    assert s.event1.dest_state == 'state_b'
+    assert s.event2.dest_state == 'sink1'
+    assert s.event3.dest_state == 'sink2'
+    assert s.event4.dest_state == 'state_a'
+
+
+def test_initial_event(Sink):
+    with pytest.raises(TypeError):
+        s = Sink(initial_state='sink1', initial_event='event1')
+    s = Sink(initial_event='event1')
+    assert s.state == 'state_b'
+    s.event2()
+    assert s.state == 'sink1'
+    s = Sink(initial_event='event2')
+    assert s.state == 'sink1'
+    s = Sink(initial_event='event3')
+    assert s.state == 'sink2'
+    s = Sink(initial_event='event4')
+    assert s.state == 'state_a'
+    with pytest.raises(InvalidTransitionError):
+        s = Sink(initial_event='unknown')
+    with pytest.raises(InvalidTransitionError):
+        s = Sink(initial_event=1.0)
