@@ -115,7 +115,7 @@ Again, trying to define a class like this...
 How to visualize an automaton?
 ------------------------------
 
-When things are getting complex and it seems that our automata are becoming autonomous lifeforms grasping to escape
+When things are getting complex and it seems that our automata are becoming autonomous life forms grasping to escape
 our control, it could be useful to have a *human friendly* representation of their behaviour.
 
 You can ask for the *transition table*...
@@ -124,7 +124,7 @@ You can ask for the *transition table*...
 
     transitiontable(TrafficLight, fmt='rst')
 
-...and you will be presented with a nice ``reStructuredText`` table:
+...and you will be presented with a nice ``reStructuredText`` snippet:
 
 .. code::
 
@@ -157,7 +157,7 @@ You can ask for the *state graph* as well...
 
 .. image:: docs/source/_static/trafficlight.png
    :alt: Traffic Light Graph
-   :align: left
+   :align: center
 
 
 Keep your docstrings tidy!
@@ -184,8 +184,26 @@ Here you have it:
         slowdown = Event("green", "yellow")
         stop = Event("yellow", "red")
 
-Using a standard format specifier with the ``automaton`` keyword and the proper output format (e.g.: ``rst``), the
-automaton representation *will be inserted in the docstring* just where it should be.
+Using a standard format specifier with the ``automaton`` keyword and the proper output format (e.g.: ``rst``), *the
+automaton representation will be inserted in the docstring during the class definition*, **just where it should be**:
+
+.. code-block:: python
+
+    >>> print(TrafficLight.__doc__)
+    """ This is a pretty standard traffic light.
+
+    This automaton follows the behaviour defined by
+    the following transition table:
+
+    ========  ======  ========
+    Source    Dest    Event
+    ========  ======  ========
+    green     yellow  slowdown
+    yellow    red     stop
+    red       green   go
+    ========  ======  ========
+
+    """
 
 *Easy!*
 
