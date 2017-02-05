@@ -157,15 +157,15 @@ You can ask for the *state graph* as well...
 
 .. image:: docs/source/_static/trafficlight.png
    :alt: Traffic Light Graph
-   :align: center
 
 
 Keep your docstrings tidy!
 --------------------------
 
 Since *automata are classes* here, it would be great to have a textual representation of the automaton's behaviour
-in our docstrings. What about having a representation that updates itself in order to stay up-to-date with the
+in our docstrings. What about having one that updates itself in order to stay up-to-date with the
 actual code?
+
 Here you have it:
 
 .. code-block:: python
