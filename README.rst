@@ -185,7 +185,9 @@ Here you have it:
         stop = Event("yellow", "red")
 
 Using a standard format specifier with the ``automaton`` keyword and the proper output format (e.g.: ``rst``), the
-automaton representation *will be inserted in the docstring* just where it should be. *Easy!*
+automaton representation *will be inserted in the docstring* just where it should be.
+
+*Easy!*
 
 
 Documentation
