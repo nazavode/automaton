@@ -218,8 +218,8 @@ Changes
 =======
 
 
-1.3.0 (**unreleased**)
-----------------------
+1.3.0 *(2017-02-05)*
+--------------------
 
 Added
 `````
@@ -234,8 +234,8 @@ Changed
 - Improved reference and documentation.
 
 
-1.2.1 (2017-01-30)
-------------------
+1.2.1 *(2017-01-30)*
+--------------------
 
 Fixed
 `````
@@ -244,8 +244,8 @@ Fixed
   **not against the package installed in ``tox`` virtualenv**.
 
 
-1.2.0 (2017-01-29)
-------------------
+1.2.0 *(2017-01-29)*
+--------------------
 
 Added
 `````
@@ -259,16 +259,16 @@ Changed
 - Removed package, now the whole library lives in one module file.
 
 
-1.1.0 (2017-01-28)
-------------------
+1.1.0 *(2017-01-28)*
+--------------------
 
 Added
 `````
 - Automaton representation as transition table or state-transition graph.
 
 
-1.0.0 (2017-01-25)
-------------------
+1.0.0 *(2017-01-25)*
+--------------------
 
 Added
 `````
