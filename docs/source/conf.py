@@ -65,7 +65,7 @@ author = 'Federico Ficarelli'
 # built documents.
 #
 # The full version, including alpha/beta/rc tags.
-release = '1.3.0'
+release = '1.3.1'
 # The short X.Y version.
 version = release.rsplit('.', 1)[0]
 
