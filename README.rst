@@ -155,7 +155,7 @@ You can ask for the *state graph* as well...
 
 ...that can of course be rendered through ``plantuml``:
 
-.. image:: docs/source/_static/trafficlight.png
+.. image:: https://github.com/nazavode/automaton/raw/master/docs/source/_static/trafficlight.png
    :alt: Traffic Light Graph
 
 
