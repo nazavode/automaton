@@ -75,8 +75,8 @@ Automaton enforces correctness in two ways:
 
 1. checking that the requested event is *valid*, that is a transition from the current state to the destination
    state exists in the state machine definition;
-1. checking whether the *state graph* representing the automaton is *connected* or not (that is it must have only
-   one `connected component`_).
+#. checking whether the *state graph* representing the automaton is *connected* or not (that is it must have only
+    one `connected component`_).
 
 So, if you try to trigger an invalid event...
 
