@@ -28,7 +28,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name="python-automaton",
-    version='1.2.1',
+    version='1.3.0',
     description="Minimal finite-state machines",
     long_description=long_description,
     author="Federico Ficarelli",

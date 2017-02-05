@@ -30,7 +30,7 @@ import networkx as nx
 __author__ = 'Federico Ficarelli'
 __copyright__ = 'Copyright (c) 2015 Federico Ficarelli'
 __license__ = 'Apache License Version 2.0'
-__version__ = '1.2.1'
+__version__ = '1.3.0'
 
 VERSION = __version__
 # bumpversion can only search for {current_version}
